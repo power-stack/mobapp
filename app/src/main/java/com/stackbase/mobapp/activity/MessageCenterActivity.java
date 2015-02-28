@@ -174,9 +174,9 @@ public class MessageCenterActivity extends Activity implements IMessageCallback,
                 item.setMessageFileName(message.getJsonFile());
                 item.setRead(message.isRead());
                 if (!message.isRead()) {
-                    item.setIcon(getResources().getDrawable(R.drawable.message_unread));
+                    item.setIcon(getResources().getDrawable(R.drawable.ic_message_unread));
                 } else {
-                    item.setIcon(getResources().getDrawable(R.drawable.message_read));
+                    item.setIcon(getResources().getDrawable(R.drawable.ic_message_read));
                 }
                 data.add(item);
             }

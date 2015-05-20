@@ -20,6 +20,8 @@ import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -39,6 +41,11 @@ public class HomePage extends Activity implements Helper.ErrorCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");
+        long m = 1432085916155l;
+        Date resultdate = new Date(m);
+        System.out.println(sdf.format(resultdate));
+
         super.onCreate(savedInstanceState);
         checkFirstLaunch();
 

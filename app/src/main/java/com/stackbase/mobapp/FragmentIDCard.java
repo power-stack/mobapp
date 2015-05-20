@@ -17,6 +17,8 @@ import android.widget.RadioButton;
 
 import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.ocr.OCRActivity;
+import com.stackbase.mobapp.templates.InfoTemplate;
+import com.stackbase.mobapp.templates.InfoTemplateManager;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
 
@@ -27,7 +29,8 @@ import java.util.Date;
 public class FragmentIDCard extends Fragment {
     private static final String TAG = FragmentIDCard.class.getSimpleName();
     View content;
-    ImageView frantIDPic;
+    ImageView idFrontPic;
+    ImageView idBackPic;
     Activity active;
     private EditText nameEdit;
     private EditText idEdit;
@@ -42,6 +45,7 @@ public class FragmentIDCard extends Fragment {
     private SharedPreferences prefs;
     private boolean isFromManage = false;
     private Borrower borrower;
+    private InfoTemplateManager _itManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,6 +61,8 @@ public class FragmentIDCard extends Fragment {
         locationEdit = (EditText) content.findViewById(R.id.locationEdit);
         expiryFromEdit = (EditText) content.findViewById(R.id.expiryFromEdit);
         expiryToEdit = (EditText) content.findViewById(R.id.expiryToEdit);
+
+        _itManager = InfoTemplateManager.getInstance(content.getResources());
 
         initView();
 
@@ -94,19 +100,39 @@ public class FragmentIDCard extends Fragment {
         Log.d(TAG, "initView");
 
         active = this.getActivity();
-        frantIDPic = (ImageView) content.findViewById(R.id.frontView);
+        idFrontPic = (ImageView) content.findViewById(R.id.frontView);
+        final InfoTemplate infoTpl = _itManager.getTemplate(Constant.OCR_TPL_IDCARD_FRONT);
 
-        ImageButton.OnClickListener clickListener = new ImageButton.OnClickListener() {
+        ImageButton.OnClickListener fclickListener = new ImageButton.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                intent.setClass(active, OCRActivity.class);
+                //intent.setClass(active, OCRActivity.class);
+                intent.putExtra(Constant.OCR_TEMPLATE, Constant.OCR_TPL_IDCARD_FRONT);
+                intent.setClass(active, infoTpl.getOcrActivityClass());
                 startActivity(intent);
             }
 
         };
 
-        frantIDPic.setOnClickListener(clickListener);
+        idFrontPic.setOnClickListener(fclickListener);
+
+        idBackPic = (ImageView) content.findViewById(R.id.backView);
+        final InfoTemplate binfoTpl = _itManager.getTemplate(Constant.OCR_TPL_IDCARD_BACK);
+
+        ImageButton.OnClickListener bclickListener = new ImageButton.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                //intent.setClass(active, OCRActivity.class);
+                intent.putExtra(Constant.OCR_TEMPLATE, Constant.OCR_TPL_IDCARD_BACK);
+                intent.setClass(active, binfoTpl.getOcrActivityClass());
+                startActivity(intent);
+            }
+
+        };
+
+        idBackPic.setOnClickListener(bclickListener);
 
         idEdit.setEnabled(true);
         nameEdit.setEnabled(true);

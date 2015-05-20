@@ -79,7 +79,7 @@ import java.io.IOException;
  * The code for this class was adapted from the ZXing project:
  * http://code.google.com/p/zxing/
  */
-public final class OCRActivity extends Activity implements
+public class OCRActivity extends Activity implements
 		SurfaceHolder.Callback, ShutterButton.OnShutterButtonListener {
 
 	private static final String TAG = OCRActivity.class.getSimpleName();
@@ -211,7 +211,7 @@ public final class OCRActivity extends Activity implements
 		return baseApi;
 	}
 
-	CameraManager getCameraManager() {
+	protected CameraManager getCameraManager() {
 		return cameraManager;
 	}
 

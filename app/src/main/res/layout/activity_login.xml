@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bgd_gradient_red"
+    >
+
+    <RelativeLayout
+        android:id="@+id/loginUI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+
+    </RelativeLayout>
+
+
+    <EditText
+        android:id="@+id/usrName"
+        android:layout_width="240dp"
+        android:layout_height="60dp"
+        android:hint="输入用户名"
+        android:layout_marginTop="36dp"
+        android:layout_below="@+id/loginUI"
+        android:layout_centerHorizontal="true">
+    </EditText>
+
+    <EditText
+        android:id="@+id/pwd"
+        android:layout_width="240dp"
+        android:layout_height="60dp"
+        android:hint="输入密码"
+        android:layout_below="@+id/usrName"
+        android:layout_centerHorizontal="true">
+    </EditText>
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="60dp"
+        android:id="@+id/loginBtn"
+        android:text="登录"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+<!--
+    <EditText
+        android:id="@+id/phone"
+        android:layout_width="140dp"
+        android:layout_height="60dp"
+        android:hint="输入手机号"
+        android:layout_below="@+id/pwd"
+        android:layout_toRightOf="@+id/loginUI"
+        android:layout_toEndOf="@+id/loginUI">
+    </EditText>
+-->
+</RelativeLayout>

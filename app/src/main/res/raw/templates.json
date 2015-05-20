@@ -56,8 +56,51 @@
         "description": "身份证背面",
         "width": 800,
         "height": 500,
+        "ocr-activity": "com.stackbase.mobapp.templates.activities.TestACTS",
         "ocr-rects": {
-
+            "name":{
+                "type": "chinese",
+                "left": 120,
+                "right": 240,
+                "top": 60,
+                "bottom": 85
+            },
+            "gender":{
+                "type": "chinese",
+                "values": ["男", "女"],
+                "left": 120,
+                "right": 130,
+                "top": 130,
+                "bottom": 155
+            },
+            "nationality":{
+                "type": "chinese",
+                "left": 340,
+                "right": 350,
+                "top": 130,
+                "bottom": 155
+            },
+            "birthday":{
+                "type": "date",
+                "left": 120,
+                "right": 420,
+                "top": 200,
+                "bottom": 225
+            },
+            "address":{
+                "type": "mix",
+                "left": 120,
+                "right": 550,
+                "top": 250,
+                "bottom": 375
+            },
+            "id_number":{
+                "type": "mix",
+                "left": 300,
+                "right": 720,
+                "top": 400,
+                "bottom": 450
+            }
         }
     }
 }

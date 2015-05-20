@@ -12,7 +12,7 @@ import com.stackbase.mobapp.utils.Constant;
 /**
  * Created by bryan on 15/3/4.
  */
-public class IDCardOCRActivity extends OCRActivity {
+public class OCRCameraActivity extends OCRActivity {
     private static final String TAG = OCRActivity.class.getSimpleName();
 
     @Override

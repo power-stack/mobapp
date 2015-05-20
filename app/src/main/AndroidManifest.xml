@@ -26,6 +26,10 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
+    <android:uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/logo_launcher"
@@ -74,8 +78,8 @@
         </activity>
         <activity
             android:name=".activity.ThumbnailsActivity"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
             android:name=".activity.FullPictureReviewActivity"
@@ -91,7 +95,7 @@
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
-            android:name=".templates.activities.IDCardOCRActivity"
+            android:name=".templates.activities.OCRCameraActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
@@ -105,8 +109,13 @@
         <activity
             android:name=".activity.MessageCenterActivity"
             android:label="@string/app_name"
-            android:theme="@style/CustomTitleBarTheme"
-            >
+            android:theme="@style/CustomTitleBarTheme" >
+        </activity>
+        <activity
+            android:name=".templates.activities.TestACTS"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_test_acts"
+            android:theme="@style/FullscreenTheme" >
         </activity>
     </application>
 

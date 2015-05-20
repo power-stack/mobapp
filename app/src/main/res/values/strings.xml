@@ -74,4 +74,6 @@
     <string name="sd_no_space">需要的外部存储(例如: SD卡)不可用或者已经没有可用空间.</string>
     <string name="sd_readonly">需要的外部存储(例如: SD卡)是只读的, 无法存储数据.</string>
     <string name="sd_damage">需要的外部存储(例如: SD卡)不可用或者已经损坏.</string>
+
+    <string name="title_activity_test_acts">TestACTS</string>
 </resources>

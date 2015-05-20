@@ -1,23 +1,51 @@
 package com.stackbase.mobapp.utils;
 
 import android.app.Activity;
-import android.content.Context;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
-public class GPSLocationTracker implements LocationListener {
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
+public class GPSLocationTracker implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        com.google.android.gms.location.LocationListener {
 
     private static final String TAG = GPSLocationTracker.class.getSimpleName();
-    private LocationManager locationManager;
     private Location currentBestLocation = null;
     static final int TWO_MINUTES = 1000 * 60 * 1;
+    static final int UPDATE_INTERVAL = 1000 * 5; // 5 seconds
+    static final int FASTEST_INTERVAL = 1000; // 1 second
+
+    private LocationRequest locationRequest;
+    private GoogleApiClient mGoogleApiClient;
 
     public GPSLocationTracker(Activity activity) {
-        locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
-        currentBestLocation = this.getLastBestLocation();
+        mGoogleApiClient = new GoogleApiClient.Builder(activity)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        locationRequest = LocationRequest.create()
+                .setInterval(UPDATE_INTERVAL)
+                .setFastestInterval(FASTEST_INTERVAL)
+                .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+    }
+
+    public void start() {
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    public void stop(){
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
     }
 
     private Location getCurrentBestLocation() {
@@ -28,24 +56,9 @@ public class GPSLocationTracker implements LocationListener {
      * @return the last know best location
      */
     public Location getLastBestLocation() {
-        Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-        long GPSLocationTime = 0;
-        if (null != locationGPS) { GPSLocationTime = locationGPS.getTime(); }
-
-        long NetLocationTime = 0;
-
-        if (null != locationNet) {
-            NetLocationTime = locationNet.getTime();
-        }
-
-        if ( 0 < GPSLocationTime - NetLocationTime ) {
-            return locationGPS;
-        }
-        else {
-            return locationNet;
-        }
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        makeUseOfNewLocation(location);
+        return getCurrentBestLocation();
     }
 
     /** Determines whether one location reading is better than the current location fix
@@ -124,17 +137,22 @@ public class GPSLocationTracker implements LocationListener {
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
+    public void onConnected(Bundle bundle) {
+        Log.d(TAG, "onConnected: " + bundle);
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if (location == null) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
+        }
+        makeUseOfNewLocation(location);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
 
     }
 
     @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed: " + connectionResult);
     }
 }

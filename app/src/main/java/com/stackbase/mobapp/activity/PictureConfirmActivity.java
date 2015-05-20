@@ -19,7 +19,6 @@ import android.widget.TextView;
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.objects.GPSLocation;
 import com.stackbase.mobapp.utils.Constant;
-import com.stackbase.mobapp.utils.GPSLocationTracker;
 import com.stackbase.mobapp.utils.Helper;
 
 import java.io.ByteArrayOutputStream;
@@ -109,22 +108,19 @@ public class PictureConfirmActivity extends Activity implements View.OnClickList
             } catch (IOException e) {
                 Log.e(TAG, "Fail to close stream.", e);
             }
-            Location location = CameraActivity.getGpsLocation().getLastBestLocation();
-            Location bestLocation = CameraActivity.getNetworkLocation().getLastBestLocation();
-            if (GPSLocationTracker.isBetterLocation(location, bestLocation)) {
-                bestLocation = location;
-            }
-            Log.d(TAG, "location: " + bestLocation);
+            Location location = CameraActivity.getLocationTracker().getLocation();
+            Log.d(TAG, "location: " + location);
             if (location == null) {
                 //TODO: show this message in the message center.
                 Helper.mMakeTextToast(this, getString(R.string.err_gps_location), true);
-            }
-            GPSLocation gpsObj = new GPSLocation(bestLocation);
-            String gpsFileName = Helper.getGPSFileName(fileName);
-            try {
-                Helper.saveFile(gpsFileName, gpsObj.toJson().toString().getBytes("UTF-8"));
-            } catch (UnsupportedEncodingException ue) {
-                Log.e(TAG, "Fail to save GPS location", ue);
+            } else {
+                GPSLocation gpsObj = new GPSLocation(location);
+                String gpsFileName = Helper.getGPSFileName(fileName);
+                try {
+                    Helper.saveFile(gpsFileName, gpsObj.toJson().toString().getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException ue) {
+                    Log.e(TAG, "Fail to save GPS location", ue);
+                }
             }
         }
         return fileName;

@@ -1,12 +1,10 @@
 package com.stackbase.mobapp.activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -26,8 +24,9 @@ import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.camera.BeepManager;
 import com.stackbase.mobapp.camera.CameraManager;
 import com.stackbase.mobapp.utils.Constant;
-import com.stackbase.mobapp.utils.GPSLocationTracker;
+import com.stackbase.mobapp.utils.FallbackLocationTracker;
 import com.stackbase.mobapp.utils.Helper;
+import com.stackbase.mobapp.utils.LocationTracker;
 import com.stackbase.mobapp.view.ShutterButton;
 
 import java.io.File;
@@ -58,9 +57,7 @@ public final class CameraActivity extends Activity implements SurfaceHolder.Call
     private SharedPreferences prefs;
     private boolean isPaused;
     private FinishListener finishListener;
-    private static GPSLocationTracker gpsLocation;
-    private static GPSLocationTracker networkLocation;
-    private LocationManager locationManager;
+    private static LocationTracker locationTracker;
 
     public FinishListener getFinishListener() {
         return finishListener;
@@ -70,12 +67,8 @@ public final class CameraActivity extends Activity implements SurfaceHolder.Call
         return prefs;
     }
 
-    public static GPSLocationTracker getGpsLocation() {
-        return gpsLocation;
-    }
-
-    public static GPSLocationTracker getNetworkLocation() {
-        return networkLocation;
+    public static LocationTracker getLocationTracker() {
+        return locationTracker;
     }
 
     @Override
@@ -104,9 +97,7 @@ public final class CameraActivity extends Activity implements SurfaceHolder.Call
 
         finishListener = new FinishListener(this);
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        gpsLocation = new GPSLocationTracker(this);
-        networkLocation = new GPSLocationTracker(this);
+        locationTracker = new FallbackLocationTracker(this);
     }
 
     @Override
@@ -123,13 +114,7 @@ public final class CameraActivity extends Activity implements SurfaceHolder.Call
             surfaceHolder.addCallback(this);
             surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
-
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, 5000, 10, gpsLocation);
-        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-            locationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, 6000, 10, networkLocation);
+        locationTracker.start();
     }
 
     /**
@@ -215,11 +200,7 @@ public final class CameraActivity extends Activity implements SurfaceHolder.Call
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
-        locationManager.removeUpdates(gpsLocation);
-        locationManager.removeUpdates(networkLocation);
-//        if (baseApi != null) {
-//            baseApi.end();
-//        }
+        locationTracker.stop();
         super.onDestroy();
     }
 

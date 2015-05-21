@@ -1,19 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <FrameLayout
-        android:id="@+id/ocr_camera_preview"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fitsSystemWindows="true">
+
+    <SurfaceView android:id="@+id/capture_preview_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="1"
-        />
+        android:layout_centerInParent="true"
+        android:background="#0000"/>
 
-    <Button
-        android:id="@+id/button_capture"
-        android:text="Capture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        />
-</LinearLayout>
+    <com.stackbase.mobapp.templates.ocr.OCRCameraPreviewView
+        android:id="@+id/ocr_camera_preview_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#0000"/>
+
+    <RelativeLayout android:id="@+id/camera_button_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <com.stackbase.mobapp.view.ShutterButton
+            android:id="@+id/shutter_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shutter_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:scaleType="center"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
+
+</FrameLayout>

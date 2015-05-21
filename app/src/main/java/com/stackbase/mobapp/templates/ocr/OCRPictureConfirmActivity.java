@@ -1,4 +1,4 @@
-package com.stackbase.mobapp.activity;
+package com.stackbase.mobapp.templates.ocr;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -28,9 +28,9 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PictureConfirmActivity extends Activity implements View.OnClickListener {
+public class OCRPictureConfirmActivity extends Activity implements View.OnClickListener {
 
-    private static final String TAG = PictureConfirmActivity.class.getSimpleName();
+    private static final String TAG = OCRPictureConfirmActivity.class.getSimpleName();
     private TextView savePictureTextView;
     private TextView recaptureTextView;
     private ImageView pictureConfirmImageView;
@@ -109,7 +109,7 @@ public class PictureConfirmActivity extends Activity implements View.OnClickList
                 Log.e(TAG, "Fail to close stream.", e);
             }
 
-            Location location = CameraActivity.getLocationTracker().getLocation();
+            Location location = OCRCameraActivity.getLocationTracker().getLocation();
             Log.d(TAG, "location: " + location);
             if (location == null) {
                 //TODO: show this message in the message center.

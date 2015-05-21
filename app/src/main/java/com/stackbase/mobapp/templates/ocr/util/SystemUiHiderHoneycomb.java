@@ -1,4 +1,4 @@
-package com.stackbase.mobapp.templates.activities.util;
+package com.stackbase.mobapp.templates.ocr.util;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

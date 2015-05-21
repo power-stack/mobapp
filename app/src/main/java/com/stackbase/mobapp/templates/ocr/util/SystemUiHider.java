@@ -1,4 +1,4 @@
-package com.stackbase.mobapp.templates.activities.util;
+package com.stackbase.mobapp.templates.ocr.util;
 
 import android.app.Activity;
 import android.os.Build;

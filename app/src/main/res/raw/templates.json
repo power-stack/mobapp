@@ -1,10 +1,10 @@
 {
     "ID_CARD_FRONT": {
-        "name": "身份证正面",
+        "name": "idcard_front",
         "description": "身份证正面",
         "width": 800,
         "height": 500,
-        "ocr-activity": "com.stackbase.mobapp.templates.activities.IDCardOCRActivity",
+        "ocr-activity": "com.stackbase.mobapp.templates.ocr.OCRCameraActivity",
         "ocr-rects": {
             "name":{
                 "type": "chinese",
@@ -52,11 +52,11 @@
         }
     },
     "ID_CARD_BACK": {
-        "name": "身份证背面",
+        "name": "idcard_back",
         "description": "身份证背面",
         "width": 800,
         "height": 500,
-        "ocr-activity": "com.stackbase.mobapp.templates.activities.TestACTS",
+        "ocr-activity": "com.stackbase.mobapp.templates.ocr.OCRCameraActivity",
         "ocr-rects": {
             "name":{
                 "type": "chinese",

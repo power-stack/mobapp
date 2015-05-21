@@ -237,8 +237,6 @@ public class HomePage extends Activity implements Helper.ErrorCallback {
                     cancelListener, null
             );
         }
-
-
     }
 
     private void checkOcrData() {

@@ -68,10 +68,18 @@
 
     <!-- prompt -->
     <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
     <string name="err_title">错误</string>
     <string name="confirm_del">确定要删除这张图片吗？</string>
     <string name="sd_unavailable">需要的外部存储(例如: SD卡)不可用.</string>
     <string name="sd_no_space">需要的外部存储(例如: SD卡)不可用或者已经没有可用空间.</string>
     <string name="sd_readonly">需要的外部存储(例如: SD卡)是只读的, 无法存储数据.</string>
     <string name="sd_damage">需要的外部存储(例如: SD卡)不可用或者已经损坏.</string>
+    <string name="download_ocr_fail">下载OCR数据出错. 请检查网络连接并重试.</string>
+    <string name="downloading_ocr">正在下载OCR数据 %s...</string>
+    <string name="uncompressing_ocr">正在解压 %s...</string>
+    <string name="wait">请等待</string>
+    <string name="check_data">正在检查已经安装的OCR数据...</string>
+    <string name="check_wifi">准备下载，由于数据量较大，建议在wifi环境下下载，是否继续？</string>
+    <string name="no_available_network">没有检测到可用网络，无法下载数据。</string>
 </resources>

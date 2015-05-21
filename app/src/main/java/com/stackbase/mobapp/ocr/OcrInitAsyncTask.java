@@ -15,6 +15,23 @@
  */
 package com.stackbase.mobapp.ocr;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
+import com.googlecode.tesseract.android.TessBaseAPI;
+import com.stackbase.mobapp.R;
+import com.stackbase.mobapp.utils.Constant;
+import com.stackbase.mobapp.utils.Helper;
+
+import org.xeustechnologies.jtar.TarEntry;
+import org.xeustechnologies.jtar.TarInputStream;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -32,21 +49,11 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.xeustechnologies.jtar.TarEntry;
-import org.xeustechnologies.jtar.TarInputStream;
-
-import com.googlecode.tesseract.android.TessBaseAPI;
-
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
-
 /**
  * Installs the language data required for OCR, and initializes the OCR engine
  * using a background thread.
  */
-final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
+public class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> implements DialogInterface.OnClickListener {
 	private static final String TAG = OcrInitAsyncTask.class.getSimpleName();
 
 	/** Suffixes of required data files for Cube. */
@@ -54,8 +61,9 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 			".cube.fold", ".cube.lm", ".cube.nn", ".cube.params",
 			// ".cube.size", // This file is not available for Hindi
 			".cube.word-freq", ".tesseract_cube.nn", ".traineddata" };
+    private String destinationFilenameBase = "tesseract-ocr-3.02.customize" + ".tar";
 
-	private OCRActivity activity;
+	private Activity activity;
 	private Context context;
 	private TessBaseAPI baseApi;
 	private ProgressDialog dialog;
@@ -63,6 +71,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	private final String languageCode;
 	private String languageName;
 	private int ocrEngineMode;
+    private String download_base;
 
 	/**
 	 * AsyncTask to asynchronously download data and initialize Tesseract.
@@ -82,7 +91,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	 * @param ocrEngineMode
 	 *            Whether to use Tesseract, Cube, or both
 	 */
-	OcrInitAsyncTask(OCRActivity activity, TessBaseAPI baseApi,
+	public OcrInitAsyncTask(Activity activity, TessBaseAPI baseApi,
 			ProgressDialog dialog, ProgressDialog indeterminateDialog,
 			String languageCode, String languageName, int ocrEngineMode) {
 		this.activity = activity;
@@ -93,19 +102,79 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		this.languageCode = languageCode;
 		this.languageName = languageName;
 		this.ocrEngineMode = ocrEngineMode;
-	}
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        this.download_base = prefs.getString(Constant.KEY_OCR_DOWNLOAD_URL, Constant.DEFAULT_DOWNLOAD_URL);
+
+    }
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		dialog.setTitle("Please wait");
-		dialog.setMessage("Checking for data installation...");
+		dialog.setTitle(activity.getString(R.string.wait));
+		dialog.setMessage(activity.getString(R.string.check_data));
 		dialog.setIndeterminate(false);
 		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		dialog.setCancelable(false);
 		dialog.show();
-		activity.setButtonVisibility(false);
+        if (activity instanceof OCRActivity) {
+            ((OCRActivity)activity).setButtonVisibility(false);
+        }
 	}
+
+    public boolean isTesseractInstalled(String destinationDirBase) {
+        File tessdataDir = new File(destinationDirBase + File.separator
+                + "tessdata");
+        boolean isCubeSupported = false;
+        for (String s : OCRActivity.CUBE_SUPPORTED_LANGUAGES) {
+            if (s.equals(languageCode)) {
+                isCubeSupported = true;
+            }
+        }
+        boolean isAllCubeDataInstalled = false;
+        if (isCubeSupported) {
+            boolean isAFileMissing = false;
+            File dataFile;
+            for (String s : CUBE_DATA_FILES) {
+                dataFile = new File(tessdataDir.toString() + File.separator
+                        + languageCode + s);
+                if (!dataFile.exists()) {
+                    isAFileMissing = true;
+                }
+            }
+            isAllCubeDataInstalled = !isAFileMissing;
+        }
+        File tesseractTestFile = new File(tessdataDir, languageCode
+                + ".traineddata");
+
+        // Check if an incomplete download is present. If a *.download file is
+        // there, delete it and
+        // any (possibly half-unzipped) Tesseract and Cube data files that may
+        // be there.
+        File incomplete = new File(tessdataDir, destinationFilenameBase
+                + ".download");
+        if (incomplete.exists()) {
+            incomplete.delete();
+            if (tesseractTestFile.exists()) {
+                tesseractTestFile.delete();
+            }
+            deleteCubeDataFiles(tessdataDir);
+        }
+
+        if (!tesseractTestFile.exists()
+                || (isCubeSupported && !isAllCubeDataInstalled)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean isOsdInstalled(String destinationDirBase) {
+        File tessdataDir = new File(destinationDirBase + File.separator
+                + "tessdata");
+        File osdFile = new File(tessdataDir, OCRActivity.OSD_FILENAME_BASE);
+        return osdFile.exists();
+    }
 
 	/**
 	 * In background thread, perform required setup, and request initialization
@@ -119,14 +188,6 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		// Check whether we need Cube data or Tesseract data.
 		// Example Cube data filename: "tesseract-ocr-3.01.eng.tar"
 		// Example Tesseract data filename: "eng.traineddata"
-		String destinationFilenameBase = languageCode + ".traineddata";
-		boolean isCubeSupported = false;
-		for (String s : OCRActivity.CUBE_SUPPORTED_LANGUAGES) {
-			if (s.equals(languageCode)) {
-				isCubeSupported = true;
-			}
-		}
-		destinationFilenameBase = "tesseract-ocr-3.02." + languageCode + ".tar";
 
 		// Check for, and create if necessary, folder to hold model data
 		String destinationDirBase = params[0]; // The storage directory, minus
@@ -142,41 +203,9 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		// Create a reference to the file to save the download in
 		File downloadFile = new File(tessdataDir, destinationFilenameBase);
 
-		// Check if an incomplete download is present. If a *.download file is
-		// there, delete it and
-		// any (possibly half-unzipped) Tesseract and Cube data files that may
-		// be there.
-		File incomplete = new File(tessdataDir, destinationFilenameBase
-				+ ".download");
-		File tesseractTestFile = new File(tessdataDir, languageCode
-				+ ".traineddata");
-		if (incomplete.exists()) {
-			incomplete.delete();
-			if (tesseractTestFile.exists()) {
-				tesseractTestFile.delete();
-			}
-			deleteCubeDataFiles(tessdataDir);
-		}
-
-		// Check whether all Cube data files have already been installed
-		boolean isAllCubeDataInstalled = false;
-		if (isCubeSupported) {
-			boolean isAFileMissing = false;
-			File dataFile;
-			for (String s : CUBE_DATA_FILES) {
-				dataFile = new File(tessdataDir.toString() + File.separator
-						+ languageCode + s);
-				if (!dataFile.exists()) {
-					isAFileMissing = true;
-				}
-			}
-			isAllCubeDataInstalled = !isAFileMissing;
-		}
-
 		// If language data files are not present, install them
 		boolean installSuccess = false;
-		if (!tesseractTestFile.exists()
-				|| (isCubeSupported && !isAllCubeDataInstalled)) {
+		if (!isTesseractInstalled(destinationDirBase)) {
 			Log.d(TAG, "Language data for " + languageCode + " not found in "
 					+ tessdataDir.toString());
 			deleteCubeDataFiles(tessdataDir);
@@ -225,7 +254,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 							+ destinationFilenameBase), tessdataDir);
 					installSuccess = true;
 				} catch (IOException e) {
-					Log.e(TAG, "Untar failed");
+					Log.e(TAG, "Untar failed", e);
 					return false;
 				}
 			}
@@ -237,9 +266,8 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		}
 
 		// If OSD data file is not present, download it
-		File osdFile = new File(tessdataDir, OCRActivity.OSD_FILENAME_BASE);
 		boolean osdInstallSuccess = false;
-		if (!osdFile.exists()) {
+		if (!isOsdInstalled(destinationDirBase)) {
 			// Check assets for language data to install. If not present,
 			// download from Internet
 			languageName = "orientation and script detection";
@@ -310,19 +338,23 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 			// Catch "View not attached to window manager" error, and continue
 		}
 
-		// Initialize the OCR engine
-		if (baseApi.init(destinationDirBase + File.separator, languageCode,
-				ocrEngineMode)) {
-			return installSuccess && osdInstallSuccess;
-		}
-		return false;
+        if (baseApi != null) {
+            // Initialize the OCR engine
+            if (baseApi.init(destinationDirBase + File.separator, languageCode,
+                    ocrEngineMode)) {
+                return installSuccess && osdInstallSuccess;
+            } else {
+                return false;
+            }
+        }
+        return installSuccess && osdInstallSuccess;
 	}
 
 	/**
 	 * Delete any existing data files for Cube that are present in the given
 	 * directory. Files may be partially uncompressed files left over from a
 	 * failed install, or pre-v3.01 traineddata files.
-	 * 
+	 *
 	 * @param tessdataDir
 	 *            Directory to delete the files from
 	 */
@@ -359,7 +391,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 			throws IOException {
 		try {
 			return downloadGzippedFileHttp(
-					new URL(OCRActivity.DOWNLOAD_BASE + sourceFilenameBase
+					new URL(download_base + File.separator + sourceFilenameBase
 							+ ".gz"), destinationFile);
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("Bad URL string.");
@@ -382,7 +414,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 			throws IOException {
 		// Send an HTTP GET request for the file
 		Log.d(TAG, "Sending GET request to " + url + "...");
-		publishProgress("Downloading data for " + languageName + "...", "0");
+		publishProgress(String.format(activity.getString(R.string.downloading_ocr), languageName), "0");
 		HttpURLConnection urlConnection = null;
 		urlConnection = (HttpURLConnection) url.openConnection();
 		urlConnection.setAllowUserInteraction(false);
@@ -420,7 +452,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 			downloaded += bufferLength;
 			percentComplete = (int) ((downloaded / (float) fileSize) * 100);
 			if (percentComplete > percentCompleteLast) {
-				publishProgress("Downloading data for " + languageName + "...",
+				publishProgress(String.format(activity.getString(R.string.downloading_ocr), languageName),
 						percentComplete.toString());
 				percentCompleteLast = percentComplete;
 			}
@@ -464,7 +496,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		int unzippedBytes = 0;
 		final Integer progressMin = 0;
 		int progressMax = 100 - progressMin;
-		publishProgress("Uncompressing data for " + languageName + "...",
+		publishProgress(String.format(activity.getString(R.string.uncompressing_ocr), languageName),
 				progressMin.toString());
 
 		// If the file is a tar file, just show progress to 50%
@@ -489,8 +521,8 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 					+ progressMin;
 
 			if (percentComplete > percentCompleteLast) {
-				publishProgress("Uncompressing data for " + languageName
-						+ "...", percentComplete.toString());
+				publishProgress(String.format(activity.getString(R.string.uncompressing_ocr), languageName),
+                        percentComplete.toString());
 				percentCompleteLast = percentComplete;
 			}
 		}
@@ -506,7 +538,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	/**
 	 * Returns the uncompressed size for a Gzipped file.
 	 * 
-	 * @param file
+	 * @param zipFile
 	 *            Gzipped file to get the size for
 	 * @return Size when uncompressed, in bytes
 	 * @throws java.io.IOException
@@ -542,7 +574,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		int unzippedBytes = 0;
 		final Integer progressMin = 50;
 		final int progressMax = 100 - progressMin;
-		publishProgress("Uncompressing data for " + languageName + "...",
+		publishProgress(String.format(activity.getString(R.string.uncompressing_ocr), languageName),
 				progressMin.toString());
 
 		// Extract all the files
@@ -556,6 +588,9 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 			String pathName = entry.getName();
 			String fileName = pathName.substring(pathName.lastIndexOf('/'),
 					pathName.length());
+            if ("/".equals(fileName)) {
+                continue;
+            }
 			OutputStream outputStream = new FileOutputStream(destinationDir
 					+ fileName);
 			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
@@ -569,8 +604,8 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 				percentComplete = (int) ((unzippedBytes / (float) uncompressedSize) * progressMax)
 						+ progressMin;
 				if (percentComplete > percentCompleteLast) {
-					publishProgress("Uncompressing data for " + languageName
-							+ "...", percentComplete.toString());
+					publishProgress(String.format(activity.getString(R.string.uncompressing_ocr), languageName),
+                            percentComplete.toString());
 					percentCompleteLast = percentComplete;
 				}
 			}
@@ -608,7 +643,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 
 	/**
 	 * Install a file from application assets to device external storage.
-	 * 
+	 *
 	 * @param sourceFilename
 	 *            File in assets to install
 	 * @param modelRoot
@@ -639,7 +674,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	/**
 	 * Unzip the given Zip file, located in application assets, into the given
 	 * destination file.
-	 * 
+	 *
 	 * @param sourceFilename
 	 *            Name of the file in assets
 	 * @param destinationDir
@@ -654,7 +689,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 			File destinationDir, File destinationFile) throws IOException,
 			FileNotFoundException {
 		// Attempt to open the zip archive
-		publishProgress("Uncompressing data for " + languageName + "...", "0");
+		publishProgress(String.format(activity.getString(R.string.uncompressing_ocr), languageName), "0");
 		ZipInputStream inputStream = new ZipInputStream(context.getAssets()
 				.open(sourceFilename));
 
@@ -691,8 +726,7 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 					unzippedSize += count;
 					percentComplete = (int) ((unzippedSize / (long) zippedFileSize) * 100);
 					if (percentComplete > percentCompleteLast) {
-						publishProgress("Uncompressing data for "
-								+ languageName + "...",
+						publishProgress(String.format(activity.getString(R.string.uncompressing_ocr), languageName),
 								percentComplete.toString(), "0");
 						percentCompleteLast = percentComplete;
 					}
@@ -729,20 +763,27 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		super.onPostExecute(result);
 
 		try {
-			indeterminateDialog.dismiss();
+            if (indeterminateDialog != null) {
+                indeterminateDialog.dismiss();
+            }
 		} catch (IllegalArgumentException e) {
 			// Catch "View not attached to window manager" error, and continue
 		}
 
 		if (result) {
 			// Restart recognition
-			activity.resumeOCR();
+            if (activity instanceof OCRActivity) {
+                ((OCRActivity) activity).resumeOCR();
+            }
 			// activity.showLanguageName();
 		} else {
-			activity.showErrorMessage(
-					"Error",
-					"Network is unreachable - cannot download language data. "
-							+ "Please enable network access and restart this app.");
+            Helper.showErrorMessage(activity, activity.getString(R.string.err_title),
+                    activity.getString(R.string.download_ocr_fail), this, null);
 		}
 	}
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+
+    }
 }

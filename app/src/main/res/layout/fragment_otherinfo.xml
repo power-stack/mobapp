@@ -1,84 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_otherinfo_gridview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:columnWidth="90dp"
+    android:numColumns="auto_fit"
+    android:verticalSpacing="10dp"
+    android:horizontalSpacing="10dp"
+    android:stretchMode="columnWidth"
+    android:gravity="center"
     android:background="@drawable/bgd_gradient_red"
-    android:nestedScrollingEnabled="true"
-    android:padding="17dp"
     android:useDefaultMargins="true"
-    >
-
-    <TextView
-        android:id="@+id/album_folder_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="0"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="19dp"
-        android:layout_row="1"
-        android:editable="true"
-        android:tag="@string/album_folder_tag"
-        android:text="征信报告" />
-
-    <ImageButton
-        android:id="@+id/creditReportBtn"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_column="0"
-        android:layout_gravity="center_horizontal"
-        android:layout_row="0"
-        android:background="@drawable/album"
-        android:labelFor="@id/album_folder_1" />
-
-    <TextView
-        android:id="@+id/album_folder_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_gravity="center_horizontal"
-        android:layout_row="1"
-        android:editable="true"
-        android:tag="album_folder_name"
-        android:text="结婚证" />
-
-    <ImageButton
-        android:id="@+id/marriageCertBtn"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_column="1"
-        android:layout_gravity="center_horizontal"
-        android:layout_row="0"
-        android:background="@drawable/album"
-        android:labelFor="@id/album_folder_2" />
-
-    <TextView
-        android:id="@+id/album_folder_3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="2"
-        android:layout_gravity="center_horizontal"
-        android:layout_row="1"
-        android:editable="true"
-        android:tag="album_folder_name"
-        android:text="合同" />
-
-    <ImageButton
-        android:id="@+id/contractBtn"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_column="2"
-        android:layout_row="0"
-        android:background="@drawable/album"
-        android:labelFor="@id/album_folder_3" />
-
-    <TextView
-        android:id="@+id/textView9"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="0"
-        android:layout_gravity="center_horizontal"
-        android:layout_row="3"
-        android:editable="true"
-        android:tag="@string/album_folder_tag" />
-
-</GridLayout>
+    />

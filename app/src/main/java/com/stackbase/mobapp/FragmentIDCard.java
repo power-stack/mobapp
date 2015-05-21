@@ -224,6 +224,25 @@ public class FragmentIDCard extends Fragment {
             borrower.setExpiryTo(expiryTo);
             active.getIntent().putExtra(Constant.INTENT_KEY_ID, id);
             active.getIntent().putExtra(Constant.INTENT_KEY_NAME, name);
+
+//            ArrayList<BorrowerData> list = new ArrayList<BorrowerData>();
+//            BorrowerData data = new BorrowerData();
+//            data.setDatumId(1);
+//            data.setDatumName("test");
+//            list.add(data);
+//            data = new BorrowerData();
+//            data.setDatumId(2);
+//            data.setDatumName("test2");
+//            list.add(data);
+//            data = new BorrowerData();
+//            data.setDatumId(3);
+//            data.setDatumName("test3");
+//            list.add(data);
+//            data = new BorrowerData();
+//            data.setDatumId(4);
+//            data.setDatumName("test4");
+//            list.add(data);
+//            borrower.setDatalist(list);
             saveIDInfo(borrower);
             return true;
         }

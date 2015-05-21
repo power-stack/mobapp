@@ -59,6 +59,7 @@
     <string name="exit">退出</string>
 
     <!-- message center -->
+    <string name="message_list">消息列表</string>
     <string name="select_all">全选</string>
     <string name="delete_all">清空</string>
     <string name="user_message">用户消息</string>

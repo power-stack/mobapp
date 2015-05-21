@@ -31,7 +31,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
@@ -58,11 +57,12 @@ import android.widget.Toast;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 import com.stackbase.mobapp.R;
-import com.stackbase.mobapp.activity.PreferencesActivity;
 import com.stackbase.mobapp.activity.FinishListener;
+import com.stackbase.mobapp.activity.PreferencesActivity;
 import com.stackbase.mobapp.camera.BeepManager;
 import com.stackbase.mobapp.ocr.camera.CameraManager;
 import com.stackbase.mobapp.utils.Constant;
+import com.stackbase.mobapp.utils.Helper;
 import com.stackbase.mobapp.utils.LanguageCodeHelper;
 import com.stackbase.mobapp.view.ShutterButton;
 import com.stackbase.mobapp.view.ViewfinderView;
@@ -80,7 +80,7 @@ import java.io.IOException;
  * http://code.google.com/p/zxing/
  */
 public final class OCRActivity extends Activity implements
-		SurfaceHolder.Callback, ShutterButton.OnShutterButtonListener {
+		SurfaceHolder.Callback, ShutterButton.OnShutterButtonListener, Helper.ErrorCallback {
 
 	private static final String TAG = OCRActivity.class.getSimpleName();
 
@@ -125,16 +125,13 @@ public final class OCRActivity extends Activity implements
 	// "hin" // Hindi
 	// };
 
-	static final String[] CUBE_SUPPORTED_LANGUAGES = {};
+	public static final String[] CUBE_SUPPORTED_LANGUAGES = {};
 
 	/** Languages that require Cube, and cannot run using Tesseract. */
 	// private static final String[] CUBE_REQUIRED_LANGUAGES = { "ara" // Arabic
 	// };
 
 	private static final String[] CUBE_REQUIRED_LANGUAGES = {};
-
-	/** Resource to use for data file downloads. */
-	static final String DOWNLOAD_BASE = "http://tesseract-ocr.googlecode.com/files/";
 
 	/** Download filename for orientation and script detection (OSD) data. */
 	static final String OSD_FILENAME = "tesseract-ocr-3.01.osd.tar";
@@ -426,7 +423,7 @@ public final class OCRActivity extends Activity implements
 				|| ocrEngineMode != previousOcrEngineMode;
 		if (doNewInit) {
 			// Initialize the OCR engine
-			File storageDirectory = getStorageDirectory();
+			File storageDirectory = Helper.getStorageDirectory(this, this);
 			if (storageDirectory != null) {
 				initOcrEngine(storageDirectory, sourceLanguageCodeOcr,
 						sourceLanguageReadable);
@@ -669,65 +666,6 @@ public final class OCRActivity extends Activity implements
 		// LanguageCodeHelper.getTranslationLanguageName(
 		// this, languageCode);
 		return true;
-	}
-
-	/** Finds the proper location on the SD card where we can save files. */
-	private File getStorageDirectory() {
-		// Log.d(TAG, "getStorageDirectory(): API level is " +
-		// Integer.valueOf(android.os.Build.VERSION.SDK_INT));
-
-		String state = null;
-		try {
-			state = Environment.getExternalStorageState();
-		} catch (RuntimeException e) {
-			Log.e(TAG, "Is the SD card visible?", e);
-			showErrorMessage("Error",
-					"Required external storage (such as an SD card) is unavailable.");
-		}
-
-		if (Environment.MEDIA_MOUNTED.equals(Environment
-				.getExternalStorageState())) {
-
-			// We can read and write the media
-			// if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) > 7) {
-			// For Android 2.2 and above
-
-			try {
-				return getExternalFilesDir(Environment.MEDIA_MOUNTED);
-			} catch (NullPointerException e) {
-				// We get an error here if the SD card is visible, but full
-				Log.e(TAG, "External storage is unavailable");
-				showErrorMessage("Error",
-						"Required external storage (such as an SD card) is full or unavailable.");
-			}
-
-			// } else {
-			// // For Android 2.1 and below, explicitly give the path as, for
-			// example,
-			// // "/mnt/sdcard/Android/data/edu.sfsu.cs.orange.ocr/files/"
-			// return new
-			// File(Environment.getExternalStorageDirectory().toString() +
-			// File.separator +
-			// "Android" + File.separator + "data" + File.separator +
-			// getPackageName() +
-			// File.separator + "files" + File.separator);
-			// }
-
-		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-			// We can only read the media
-			Log.e(TAG, "External storage is read-only");
-			showErrorMessage(
-					"Error",
-					"Required external storage (such as an SD card) is unavailable for data storage.");
-		} else {
-			// Something else is wrong. It may be one of many other states, but
-			// all we need
-			// to know is we can neither read nor write
-			Log.e(TAG, "External storage is unavailable");
-			showErrorMessage("Error",
-					"Required external storage (such as an SD card) is unavailable or corrupted.");
-		}
-		return null;
 	}
 
 	/**
@@ -1263,17 +1201,7 @@ public final class OCRActivity extends Activity implements
 
 		// Retrieve from preferences, and set in this Activity, the OCR engine
 		// mode
-		String[] ocrEngineModes = getResources().getStringArray(
-				R.array.ocrenginemodes);
-		String ocrEngineModeName = prefs.getString(
-            Constant.KEY_OCR_ENGINE_MODE, ocrEngineModes[0]);
-		if (ocrEngineModeName.equals(ocrEngineModes[0])) {
-			ocrEngineMode = TessBaseAPI.OEM_TESSERACT_ONLY;
-		} else if (ocrEngineModeName.equals(ocrEngineModes[1])) {
-			ocrEngineMode = TessBaseAPI.OEM_CUBE_ONLY;
-		} else if (ocrEngineModeName.equals(ocrEngineModes[2])) {
-			ocrEngineMode = TessBaseAPI.OEM_TESSERACT_CUBE_COMBINED;
-		}
+        ocrEngineMode = Helper.getOcrEngineMode(this);
 
 		// Retrieve from preferences, and set in this Activity, the character
 		// blacklist and whitelist
@@ -1371,4 +1299,9 @@ public final class OCRActivity extends Activity implements
 				.setOnCancelListener(new FinishListener(this))
 				.setPositiveButton("Done", new FinishListener(this)).show();
 	}
+
+    @Override
+    public void onErrorTaken(String title, String message) {
+        Helper.showErrorMessage(this, title, message, null, null);
+    }
 }

@@ -169,13 +169,13 @@ public final class CameraActivity extends Activity implements SurfaceHolder.Call
 
         } catch (IOException ioe) {
             Log.e(TAG, "Fail to open camera driver", ioe);
-            Helper.showErrorMessage(this, "错误", "不能打开照相机设备, 请重启您的手机或检查权限设置.",
+            Helper.showErrorMessage(this, getString(R.string.err_title), "不能打开照相机设备, 请重启您的手机或检查权限设置.",
                     null, finishListener);
         } catch (RuntimeException e) {
             Log.e(TAG, "Fail to open camera driver", e);
             // Barcode Scanner has seen crashes in the wild of this variety:
             // java.?lang.?RuntimeException: Fail to connect to camera service
-            Helper.showErrorMessage(this, "错误", "不能打开照相机设备, 请重启您的手机或检查权限设置.",
+            Helper.showErrorMessage(this, getString(R.string.err_title), "不能打开照相机设备, 请重启您的手机或检查权限设置.",
                     null, finishListener);
         }
     }

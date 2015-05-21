@@ -1,11 +1,15 @@
 package com.stackbase.mobapp;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -16,12 +20,13 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.stackbase.mobapp.activity.FinishListener;
+import com.stackbase.mobapp.ocr.OCRActivity;
+import com.stackbase.mobapp.ocr.OcrInitAsyncTask;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
+import com.stackbase.mobapp.utils.LanguageCodeHelper;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,10 +46,7 @@ public class HomePage extends Activity implements Helper.ErrorCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");
-        long m = 1432085916155l;
-        Date resultdate = new Date(m);
-        System.out.println(sdf.format(resultdate));
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         super.onCreate(savedInstanceState);
         checkFirstLaunch();
@@ -53,17 +55,20 @@ public class HomePage extends Activity implements Helper.ErrorCallback {
             setDefaultPreferences();
         }
 
+        DialogInterface.OnClickListener alertListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        };
         if (!Helper.checkSDCard()) {
-            DialogInterface.OnClickListener alertListener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            };
             Helper.showErrorMessage(this, getString(R.string.err_title), getString(R.string.err_nosd),
                     null, alertListener);
 
         }
+
+        checkOcrData();
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_home);
 
@@ -102,11 +107,6 @@ public class HomePage extends Activity implements Helper.ErrorCallback {
                 // HomePage.this.finish();
             }
         });
-    }
-
-    protected void toast() {
-        // TODO Auto-generated method stub
-
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -173,8 +173,6 @@ public class HomePage extends Activity implements Helper.ErrorCallback {
      * Sets default values for preferences. To be called the first time this app is run.
      */
     private void setDefaultPreferences() {
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
         File storage_dir_root_file = Helper.getStorageDirectory(this, this);
         String default_storage = Constant.DEFAULT_STORAGE_DIR;
         if (storage_dir_root_file != null) {
@@ -197,12 +195,66 @@ public class HomePage extends Activity implements Helper.ErrorCallback {
         prefs.edit().putBoolean(Constant.KEY_MESSAGE_NOTIFY, Constant.DEFAULT_MESSAGE_NOTIFY).apply();
         // Message vibrate
         prefs.edit().putBoolean(Constant.KEY_MESSAGE_VIBRATE, Constant.DEFAULT_MESSAGE_VIBRATE).apply();
+        prefs.edit().putString(Constant.KEY_OCR_DOWNLOAD_URL, Constant.DEFAULT_DOWNLOAD_URL).apply();
     }
 
     @Override
     public void onErrorTaken(String title, String message) {
         Helper.showErrorMessage(this, title, message, finishListener,
                 finishListener);
+    }
 
+    private void checkWifiAndDownload(final OcrInitAsyncTask task, final File storageDirectory) {
+        // Check if wifi is enabled
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo netInfo = connManager.getActiveNetworkInfo();
+        DialogInterface.OnClickListener cancelListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+                System.exit(0);
+            }
+        };
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            Log.d(TAG, "Network available:true");
+            if (!mWifi.isConnected()) {
+                Helper.showErrorMessage(this, getString(R.string.err_title), getString(R.string.check_wifi),
+                        cancelListener,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                task.execute(storageDirectory.toString());
+                            }
+                        }
+                );
+            } else {
+                task.execute(storageDirectory.toString());
+            }
+        } else {
+            Log.d(TAG, "Network available:false");
+            Helper.showErrorMessage(this, getString(R.string.err_title), getString(R.string.no_available_network),
+                    cancelListener, null
+            );
+        }
+
+
+    }
+
+    private void checkOcrData() {
+        String languageCode = prefs.getString(
+                Constant.KEY_SOURCE_LANGUAGE_PREFERENCE,
+                OCRActivity.DEFAULT_SOURCE_LANGUAGE_CODE);
+        String languageName = LanguageCodeHelper.getOcrLanguageName(this,
+                languageCode);
+        int ocrEngineMode = Helper.getOcrEngineMode(this);
+        ProgressDialog dialog = new ProgressDialog(this);
+        File storageDirectory = Helper.getStorageDirectory(this, this);
+        OcrInitAsyncTask task = new OcrInitAsyncTask(this, null, dialog, null,
+                languageCode, languageName, ocrEngineMode);
+        if (!task.isOsdInstalled(storageDirectory.getAbsolutePath()) ||
+                !task.isTesseractInstalled(storageDirectory.getAbsolutePath())) {
+            checkWifiAndDownload(task, storageDirectory);
+        }
     }
 }

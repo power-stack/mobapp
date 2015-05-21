@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.googlecode.tesseract.android.TessBaseAPI;
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.objects.Message;
@@ -52,10 +55,10 @@ abstract public class Helper {
         AlertDialog.Builder dialog = new AlertDialog.Builder(context).setTitle(title)
                 .setMessage(message);
         if (cancelListener != null) {
-            dialog.setNegativeButton("取消", cancelListener);
+            dialog.setNegativeButton(context.getString(R.string.cancel), cancelListener);
         }
         if (positiveListener != null) {
-            dialog.setPositiveButton("确认", positiveListener);
+            dialog.setPositiveButton(context.getString(R.string.confirm), positiveListener);
         }
         dialog.setCancelable(false);
         dialog.show();
@@ -428,4 +431,23 @@ abstract public class Helper {
         }
         return messages;
     }
+
+    public static int getOcrEngineMode(Activity activity) {
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(activity);
+        String[] ocrEngineModes = activity.getResources().getStringArray(
+                R.array.ocrenginemodes);
+        int engineMode = 0;
+        String ocrEngineModeName = prefs.getString(
+                Constant.KEY_OCR_ENGINE_MODE, ocrEngineModes[0]);
+        if (ocrEngineModeName.equals(ocrEngineModes[0])) {
+            engineMode = TessBaseAPI.OEM_TESSERACT_ONLY;
+        } else if (ocrEngineModeName.equals(ocrEngineModes[1])) {
+            engineMode = TessBaseAPI.OEM_CUBE_ONLY;
+        } else if (ocrEngineModeName.equals(ocrEngineModes[2])) {
+            engineMode = TessBaseAPI.OEM_TESSERACT_CUBE_COMBINED;
+        }
+        return engineMode;
+    }
+
 }

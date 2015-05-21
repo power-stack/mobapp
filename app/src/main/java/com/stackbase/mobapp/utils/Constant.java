@@ -1,8 +1,5 @@
 package com.stackbase.mobapp.utils;
 
-/**
- * Created by gengjh on 1/16/15.
- */
 abstract public class Constant {
     /**
      * Whether to use autofocus by default.
@@ -39,7 +36,7 @@ abstract public class Constant {
     /**
      * The default subdir to save pictures and data
      */
-    public static final String DEFAULT_STORAGE_DIR = "stackbase/mobapp/";
+    public static final String DEFAULT_STORAGE_DIR = "esse/mobapp/";
 
     /**
      * The default subdir to save pictures and data
@@ -55,6 +52,11 @@ abstract public class Constant {
      * Whether vibrate when send notification.
      */
     public static final boolean DEFAULT_MESSAGE_VIBRATE = true;
+
+    /**
+     * The default url to download ocr packages
+     */
+    public static final String DEFAULT_DOWNLOAD_URL = "http://www.idevops.net:33080/files";
 
     public static final String KEY_PREFERENCE_CATEGORY_OCR = "preference_category_ocr";
     public static final String KEY_SOURCE_LANGUAGE_PREFERENCE = "sourceLanguageCodeOcrPref";
@@ -80,7 +82,9 @@ abstract public class Constant {
     public static final String KEY_MESSAGE_NOTIFY = "preference_message_notify";
     public static final String KEY_MESSAGE_VIBRATE = "preference_message_vibrate";
 
-    public static final String INTENT_PACKAGE = "com.stackbase.mobapp";
+    public static final String KEY_OCR_DOWNLOAD_URL = "preference_ocr_download_url";
+
+    public static final String INTENT_PACKAGE = "io.esse.mobapp";
 
     public static final String INTENT_KEY_ID = "INTENT_NAME_ID";
     public static final String INTENT_KEY_NAME = "INTENT_KEY_NAME";

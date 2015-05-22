@@ -58,6 +58,11 @@ abstract public class Constant {
      */
     public static final String DEFAULT_DOWNLOAD_URL = "http://www.idevops.net:33080/files";
 
+    /**
+     * The default url to connect to Server API
+     */
+    public static final String DEFAULT_API_ENDPOINT = "http://inback.eloancn.com";
+
     public static final String KEY_PREFERENCE_CATEGORY_OCR = "preference_category_ocr";
     public static final String KEY_SOURCE_LANGUAGE_PREFERENCE = "sourceLanguageCodeOcrPref";
     // Preference keys not carried over from ZXing project
@@ -83,6 +88,8 @@ abstract public class Constant {
     public static final String KEY_MESSAGE_VIBRATE = "preference_message_vibrate";
 
     public static final String KEY_OCR_DOWNLOAD_URL = "preference_ocr_download_url";
+    public static final String KEY_REMOTE_API_ENDPOINT = "preference_remote_api_endpoint";
+    public static final String KEY_REMOTE_ACCESS_TOKEN = "preference_remote_access_token";
 
     public static final String INTENT_PACKAGE = "io.esse.mobapp";
 

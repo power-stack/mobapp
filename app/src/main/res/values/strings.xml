@@ -83,4 +83,7 @@
     <string name="check_data">正在检查已经安装的OCR数据...</string>
     <string name="check_wifi">准备下载，由于数据量较大，建议在wifi环境下下载，是否继续？</string>
     <string name="no_available_network">没有检测到可用网络，无法下载数据。</string>
+
+    <!-- remote api call -->
+    <string name="call_api_failed">连接服务器失败, 错误代码: %s.</string>
 </resources>

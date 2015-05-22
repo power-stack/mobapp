@@ -350,14 +350,27 @@ abstract public class Helper {
         return gpsFileName;
     }
 
-    public static ArrayList<Borrower> loadBorrowersInfo(String rootDir) {
+    public static ArrayList<Borrower> loadBorrowersInfo(String rootDir) throws RemoteException {
         ArrayList<Borrower> borrowers = new ArrayList<>();
-        File brDir = new File(rootDir);
-        if (brDir.isDirectory()) {
-            for (File file : brDir.listFiles()) {
-                if (isValidMD5(file.getName())) {
-                    borrowers.add(new Borrower(file.getAbsolutePath() + File.separator
-                            + BORROWER_FILE_NAME));
+        // try to load borrowers info from server first
+        RemoteAPI api = new RemoteAPI();
+        try {
+            api.listBorrowers();
+        } catch (IOException e) {
+            if (e instanceof RemoteException) {
+                if (((RemoteException)e).getStatusCode() == 500) {
+                    Log.d(TAG, "Need login again!");
+                    throw (RemoteException) e;
+                }
+            }
+            Log.d(TAG, "Load borrower info from local.");
+            File brDir = new File(rootDir);
+            if (brDir.isDirectory()) {
+                for (File file : brDir.listFiles()) {
+                    if (isValidMD5(file.getName())) {
+                        borrowers.add(new Borrower(file.getAbsolutePath() + File.separator
+                                + BORROWER_FILE_NAME));
+                    }
                 }
             }
         }
@@ -505,7 +518,7 @@ abstract public class Helper {
                                     // convert JSONObject to real object in the list
                                     for (Object jobj: ((JSONArray) value)) {
                                         Object newObj = listClass.newInstance();
-                                        covertJson((JSONObj)newObj, (JSONObject) jobj);
+                                        covertJson((JSONObj) newObj, (JSONObject) jobj);
                                         newValues.add(newObj);
                                     }
                                     method.invoke(obj, newValues);

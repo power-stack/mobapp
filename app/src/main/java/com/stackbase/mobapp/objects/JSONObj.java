@@ -105,7 +105,32 @@ abstract public class JSONObj implements Serializable {
             }
         }
     }
-
+    
+    public void fromJSONStr(String jsonStr) {
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(jsonStr);
+            JSONObject jsonObject = (JSONObject) obj;
+            Method[] methods = this.getClass().getDeclaredMethods();
+            for (Method method: methods) {
+                if (method.getName().startsWith("set")) {
+                    try {
+                        String fieldName = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
+                        Object value = jsonObject.get(fieldName);
+                        Field field = this.getClass().getDeclaredField(fieldName);
+                        if (value != null && field.getType() == value.getClass()) {
+                            method.invoke(this, value);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();;
+        }
+    }
+    
     @Override
     public String toString() {
         return this.toJson().toJSONString();

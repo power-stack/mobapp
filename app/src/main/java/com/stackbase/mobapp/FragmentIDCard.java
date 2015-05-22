@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,7 +17,6 @@ import android.widget.RadioButton;
 import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.ocr.OCRActivity;
 import com.stackbase.mobapp.utils.Constant;
-import com.stackbase.mobapp.utils.Helper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -243,15 +241,8 @@ public class FragmentIDCard extends Fragment {
 //            data.setDatumName("test4");
 //            list.add(data);
 //            borrower.setDatalist(list);
-            saveIDInfo(borrower);
+            ((CollectActivity) active).saveBorrowerInfo(borrower);
             return true;
         }
-    }
-
-    private boolean saveIDInfo(Borrower borrower) {
-        prefs = PreferenceManager.getDefaultSharedPreferences(content.getContext());
-        String rootDir = prefs.getString(Constant.KEY_STORAGE_DIR,
-                Constant.DEFAULT_STORAGE_DIR);
-        return Helper.saveBorrower(borrower, rootDir);
     }
 }

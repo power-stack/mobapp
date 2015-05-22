@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -15,15 +16,28 @@ import com.googlecode.tesseract.android.TessBaseAPI;
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.objects.BorrowerData;
+import com.stackbase.mobapp.objects.JSONObj;
 import com.stackbase.mobapp.objects.Message;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -463,4 +477,72 @@ abstract public class Helper {
         return engineMode;
     }
 
+    /**
+     * Covert json data from JSONObject to JSONObj
+     * @param obj
+     * @param jsonObject
+     */
+    public static void covertJson(JSONObj obj, JSONObject jsonObject) {
+        Method[] methods = obj.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.getName().startsWith("set")) {
+                try {
+                    String fieldName = method.getName().substring(3, 4).toLowerCase()
+                            + method.getName().substring(4);
+                    Object value = jsonObject.get(fieldName);
+                    Field field = obj.getClass().getDeclaredField(fieldName);
+                    if (value != null) {
+                        Log.d(TAG, "Find field in json file: " + fieldName + "--" + value);
+                        if (value.getClass().equals(Long.class) && field.getType().equals(Integer.TYPE)) {
+                            method.invoke(obj, ((Long) value).intValue());
+                        } else if (value.getClass().equals(JSONArray.class) && field.getType().equals(List.class)) {
+                            Type type = field.getGenericType();
+                            if (type instanceof ParameterizedType) {
+                                ParameterizedType pt = (ParameterizedType) type;
+                                if (pt.getActualTypeArguments().length > 0) {
+                                    Class<?> listClass = (Class<?>) pt.getActualTypeArguments()[0];
+                                    List newValues = new ArrayList();
+                                    // convert JSONObject to real object in the list
+                                    for (Object jobj: ((JSONArray) value)) {
+                                        Object newObj = listClass.newInstance();
+                                        covertJson((JSONObj)newObj, (JSONObject) jobj);
+                                        newValues.add(newObj);
+                                    }
+                                    method.invoke(obj, newValues);
+                                }
+                            }
+                        } else {
+                            method.invoke(obj, value);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    public static JSONObject loadJsonFromRaw(Resources res, int rawId) {
+        InputStream in = res.openRawResource(rawId);
+        JSONParser parser = new JSONParser();
+        BufferedReader bfReader = null;
+        try {
+            bfReader = new BufferedReader(new InputStreamReader(in));
+
+            Object obj = parser.parse(bfReader);
+            return (JSONObject) obj;
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        } finally {
+            if (bfReader != null) {
+                try {
+                    bfReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
 }

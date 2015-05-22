@@ -30,6 +30,7 @@ import com.stackbase.mobapp.activity.MessageCenterActivity;
 import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.utils.BitmapUtilities;
 import com.stackbase.mobapp.utils.Constant;
+import com.stackbase.mobapp.utils.HTTPUtils;
 import com.stackbase.mobapp.utils.Helper;
 import com.stackbase.mobapp.view.adapters.IUpdateCallback;
 import com.stackbase.mobapp.view.adapters.SwipeListViewAdapter;
@@ -37,6 +38,8 @@ import com.stackbase.mobapp.view.adapters.SwipeListViewItem;
 import com.stackbase.mobapp.view.swipelistview.BaseSwipeListViewListener;
 import com.stackbase.mobapp.view.swipelistview.SwipeListView;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,16 +52,15 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
 
     private static final int REQUEST_CODE_SETTINGS = 0;
     private static final int REQUEST_ID_CHANGE = 1;
+    private static final int MSG_WHAT_UPLOAD_BORROWER = 1;
+    private static final String MSG_KEY_BORROWER_NAME = "MSG_KEY_BORROWER_NAME";
+    private static final String MSG_KEY_PROGRESS = "MSG_KEY_PROGRESS";
+    private static final String MSG_KEY_UPLOAD_RESULT = "MSG_KEY_UPLOAD_RESULT";
     private SwipeListViewAdapter adapter;
     private List<SwipeListViewItem> data;
     private SwipeListView swipeListView;
     private ProgressDialog progressDialog;
     private int mScrollState;
-
-    private static final int MSG_WHAT_UPLOAD_BORROWER = 1;
-    private static final String MSG_KEY_BORROWER_NAME = "MSG_KEY_BORROWER_NAME";
-    private static final String MSG_KEY_PROGRESS = "MSG_KEY_PROGRESS";
-    private static final String MSG_KEY_UPLOAD_RESULT = "MSG_KEY_UPLOAD_RESULT";
     private SharedPreferences prefs;
     private ImageView messageUnread;
     private ImageView showMessages;
@@ -311,8 +313,8 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
         swipeListView.dismiss(position);
     }
 
-    public PendingIntent getDefalutIntent(int flags){
-        PendingIntent pendingIntent= PendingIntent.getActivity(this, 1, new Intent(), flags);
+    public PendingIntent getDefalutIntent(int flags) {
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, new Intent(), flags);
         return pendingIntent;
     }
 
@@ -456,15 +458,49 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
             this.item.setUploading(true);
             Log.d(TAG, String.format("Uploading: %s -- %s", this.item.getName(), borrower.getId()));
             publishProgress(this.item.getUploadedProgress(), true);
-            for (int i = this.item.getUploadedProgress(); i <= 100; i++) {
-                try {
-                    //TODO: invoke remote server api
-                    Thread.sleep(100);
-                    publishProgress(i, true);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "Upload borrower error", e);
+            File borrower_dir = (new File(borrower.getJsonFile())).getParentFile();
+            File[] borrower_files = borrower_dir.listFiles();
+            List<File> alljpgs = new ArrayList<File>();
+            for (int i = 0; i < borrower_files.length; i++) {
+                if (borrower_files[i].isDirectory()) {
+                    for (File afile : borrower_files[i].listFiles()) {
+                        if (afile.getName().endsWith(".jpg")) {
+                            alljpgs.add(afile);
+                        }
+                    }
                 }
             }
+            int allfiles = alljpgs.size();
+            for (int j = 0; j < allfiles; j++) {
+                try {
+                    //TODO: invoke remote server api
+                    File jpg = alljpgs.get(j);
+                    Log.d(TAG, "File: " + jpg.getPath());
+//                    HTTPUtils httpcon = new HTTPUtils("http://upload.eloancn.com/app/uploadUserDatum.action", "UTF-8");
+                    HTTPUtils httpcon = new HTTPUtils("http://192.168.1.66/app/uploadUserDatum.action", "UTF-8");
+                    httpcon.addFormField("imageName", jpg.getName());
+                    httpcon.addFormField("datumId", (new Integer(j)).toString());
+                    httpcon.addFormField("borrowId", (new Integer(j * 10)).toString());
+                    httpcon.addFormField("imgSize", (new Long(jpg.length())).toString());
+                    httpcon.addFormField("encryptpwd", "1234");
+
+                    httpcon.addFilePart("fileUpload", jpg);
+                    List<String> response = httpcon.finish();
+
+                    System.out.println("SERVER REPLIED:");
+
+                    for (String line : response) {
+                        System.out.println(line);
+                    }
+                    Thread.sleep(100);
+                    publishProgress(j * 100 / allfiles, true);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Upload borrower error", e);
+                } catch (IOException ioe) {
+                    Log.e(TAG, "Upload borrower error", ioe);
+                }
+            }
+            publishProgress(100, true);
             this.item.setUploading(false);
             this.item.setUploadedProgress(100);
             this.item.setCurrentProgress(100);

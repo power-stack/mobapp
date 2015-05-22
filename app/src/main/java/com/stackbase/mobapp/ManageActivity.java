@@ -458,13 +458,10 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
             this.item.setUploading(true);
             Log.d(TAG, String.format("Uploading: %s -- %s", this.item.getName(), borrower.getId()));
             publishProgress(this.item.getUploadedProgress(), true);
-//            String borrower_dir_name = (new File(borrower.getJsonFile())).getParentFile();
             File borrower_dir = (new File(borrower.getJsonFile())).getParentFile();
-//            File borrower_dir = new File(borrower_dir_name);
             File[] borrower_files = borrower_dir.listFiles();
             List<File> alljpgs = new ArrayList<File>();
             for (int i = 0; i < borrower_files.length; i++) {
-//            for (int i = this.item.getUploadedProgress(); i <= 100; i++) {
                 if (borrower_files[i].isDirectory()) {
                     for (File afile : borrower_files[i].listFiles()) {
                         if (afile.getName().endsWith(".jpg")) {
@@ -479,12 +476,13 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                     //TODO: invoke remote server api
                     File jpg = alljpgs.get(j);
                     Log.d(TAG, "File: " + jpg.getPath());
-                    HTTPUtils httpcon = new HTTPUtils("http://upload.eloancn.com/app/uploadUserDatum.action", "UTF-8");
-                    httpcon.addHeaderField("imageName", jpg.getName());
-                    httpcon.addHeaderField("datumId", (new Integer(j)).toString());
-                    httpcon.addHeaderField("borrowId", (new Integer(j * 10)).toString());
-                    httpcon.addHeaderField("imgSize", (new Long(jpg.length())).toString());
-                    httpcon.addHeaderField("encryptpwd", "1234");
+//                    HTTPUtils httpcon = new HTTPUtils("http://upload.eloancn.com/app/uploadUserDatum.action", "UTF-8");
+                    HTTPUtils httpcon = new HTTPUtils("http://192.168.1.66/app/uploadUserDatum.action", "UTF-8");
+                    httpcon.addFormField("imageName", jpg.getName());
+                    httpcon.addFormField("datumId", (new Integer(j)).toString());
+                    httpcon.addFormField("borrowId", (new Integer(j * 10)).toString());
+                    httpcon.addFormField("imgSize", (new Long(jpg.length())).toString());
+                    httpcon.addFormField("encryptpwd", "1234");
 
                     httpcon.addFilePart("fileUpload", jpg);
                     List<String> response = httpcon.finish();

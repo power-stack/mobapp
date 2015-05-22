@@ -3,13 +3,13 @@
     android:layout_height="fill_parent"
     android:fitsSystemWindows="true">
 
-    <SurfaceView android:id="@+id/capture_preview_view"
+    <SurfaceView android:id="@+id/tpl_ocr_capture_preview_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_centerInParent="true"
         android:background="#0000"/>
 
-    <com.stackbase.mobapp.templates.ocr.OCRCameraPreviewView
+    <com.stackbase.mobapp.templates.ocr.camera.OCRCameraPreviewView
         android:id="@+id/ocr_camera_preview_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

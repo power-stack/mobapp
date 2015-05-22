@@ -1,4 +1,4 @@
-package com.stackbase.mobapp.templates.ocr;
+package com.stackbase.mobapp.templates.ocr.camera;
 
 import android.os.Handler;
 import android.os.Message;

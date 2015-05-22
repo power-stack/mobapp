@@ -1,6 +1,7 @@
-package com.stackbase.mobapp.templates.ocr;
+package com.stackbase.mobapp.templates.ocr.camera;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -12,12 +13,16 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.objects.GPSLocation;
+import com.stackbase.mobapp.templates.InfoTemplate;
+import com.stackbase.mobapp.templates.InfoTemplateManager;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
 
@@ -35,6 +40,7 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
     private TextView recaptureTextView;
     private ImageView pictureConfirmImageView;
     private String tempImageFile;
+    InfoTemplate ocrTpl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,9 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
         savePictureTextView.setOnClickListener(this);
         recaptureTextView.setOnClickListener(this);
 
+        InfoTemplateManager itManager = InfoTemplateManager.getInstance(getApplication().getResources());
+        String tplName = getIntent().getStringExtra(Constant.OCR_TEMPLATE);
+        ocrTpl = itManager.getTemplate(tplName);
         initImageView();
     }
 
@@ -54,10 +63,24 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
         tempImageFile = getIntent().getStringExtra(MediaStore.EXTRA_OUTPUT);
         if (tempImageFile != null) {
             byte[] data = Helper.loadFile(tempImageFile);
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
+            WindowManager manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+            Display display = manager.getDefaultDisplay();
+            int screenWidth = display.getWidth();
+            int screenHeight = display.getHeight();
+            //int screenWidth = getResources().getDisplayMetrics().widthPixels;
+            //int screenHeight = getResources().getDisplayMetrics().heightPixels;
             Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-
+            Log.i("ocr_bm", "" + bm.getWidth() + "," + bm.getHeight());
+            int topOffset = 0;
+            int leftOffset = 0;
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                topOffset = (screenWidth - this.ocrTpl.getHeight()) / 2;
+                leftOffset = (screenHeight - this.ocrTpl.getWidth()) / 2;
+            }else{
+                topOffset = (screenHeight - this.ocrTpl.getHeight()) / 2;
+                leftOffset = (screenWidth - this.ocrTpl.getWidth()) / 2;
+            }
+            bm = Bitmap.createBitmap(bm, leftOffset, topOffset, ocrTpl.getWidth(), ocrTpl.getHeight());
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 // Notice that width and height are reversed
                 Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
@@ -73,14 +96,9 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 Bitmap scaled = Bitmap.createScaledBitmap(bm, screenWidth, screenHeight, true);
                 bm = scaled;
             }
-//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//            bm.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
             pictureConfirmImageView.setImageBitmap(bm);
-//            try {
-//                stream.close();
-//            } catch (IOException e) {
-//                Log.e(TAG, "Fail to close stream.", e);
-//            }
+
         }
 
     }

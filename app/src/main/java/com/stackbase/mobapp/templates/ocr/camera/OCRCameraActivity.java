@@ -1,4 +1,4 @@
-package com.stackbase.mobapp.templates.ocr;
+package com.stackbase.mobapp.templates.ocr.camera;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -93,6 +93,7 @@ public class OCRCameraActivity extends Activity implements
         InfoTemplate ocrTpl = itManager.getTemplate(tplName);
         cameraManager = new OCRCameraManager(getApplication(), ocrTpl);
         cpView.setCameraManager(cameraManager);
+        cpView.setInfoTemplate(ocrTpl);
         locationTracker = new FallbackLocationTracker(this);
     }
 
@@ -103,7 +104,7 @@ public class OCRCameraActivity extends Activity implements
         retrievePreferences();
 
         // Set up the camera preview surface.
-        surfaceView = (SurfaceView) findViewById(R.id.capture_preview_view);
+        surfaceView = (SurfaceView) findViewById(R.id.tpl_ocr_capture_preview_view);
         surfaceHolder = surfaceView.getHolder();
         if (!hasSurface) {
             surfaceHolder.addCallback(this);
@@ -206,7 +207,7 @@ public class OCRCameraActivity extends Activity implements
         super.onPause();
     }
 
-    
+
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         hasSurface = false;
@@ -341,14 +342,9 @@ public class OCRCameraActivity extends Activity implements
             intent.putExtra(MediaStore.EXTRA_OUTPUT, saveTempImage(data));
             intent.putExtra(Constant.INTENT_KEY_PIC_FOLDER,
                     getIntent().getStringExtra(Constant.INTENT_KEY_PIC_FOLDER));
+            intent.putExtra(Constant.OCR_TEMPLATE, Constant.OCR_TPL_IDCARD_FRONT);
             startActivityForResult(intent, 0);
             handler.stop();
-//            if (pictureConfirmImageView == null) {
-//                pictureConfirmImageView = (ImageView) findViewById(R.id.pictureConfirmImageView);
-//            }
-//            if (pictureConfirmImageView != null) {
-//                pictureConfirmImageView.setImageBitmap(bm);
-//            }
         } else {
             Log.d(TAG, "Did not get the data when take picture!");
         }

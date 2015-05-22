@@ -1,4 +1,4 @@
-package com.stackbase.mobapp.templates.ocr;
+package com.stackbase.mobapp.templates.ocr.camera;
 
 /**
  * Created by bryan on 15/5/19.

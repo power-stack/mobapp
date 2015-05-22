@@ -1,4 +1,4 @@
-package com.stackbase.mobapp.templates.ocr;
+package com.stackbase.mobapp.templates.ocr.camera;
 
 import android.app.Activity;
 import android.content.Context;
@@ -35,8 +35,8 @@ public final class OCRCameraManager {
 
     private static final int MIN_FRAME_WIDTH = 50; // originally 240
     private static final int MIN_FRAME_HEIGHT = 20; // originally 240
-    private static final int MAX_FRAME_WIDTH = 800; // originally 480
-    private static final int MAX_FRAME_HEIGHT = 600; // originally 360
+    private static final int MAX_FRAME_WIDTH = 1000; // originally 480
+    private static final int MAX_FRAME_HEIGHT = 700; // originally 360
 
     private final Context context;
     private final OCRCameraConfigurationManager configManager;

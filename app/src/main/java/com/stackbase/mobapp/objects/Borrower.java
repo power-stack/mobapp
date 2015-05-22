@@ -1,6 +1,7 @@
 package com.stackbase.mobapp.objects;
 
 import java.util.Date;
+import java.util.List;
 
 public class Borrower extends JSONObj {
     private String id = "";
@@ -16,6 +17,8 @@ public class Borrower extends JSONObj {
     private String idPicture2 = "";
     private String jsonFile = "";
     private int uploadedProgress = 0;
+    private String borrowType = "";
+    private List<BorrowerData> datalist = null;
 
     public Borrower() {
         super();
@@ -127,5 +130,21 @@ public class Borrower extends JSONObj {
 
     public void setUploadedProgress(int uploadedProgress) {
         this.uploadedProgress = uploadedProgress;
+    }
+
+    public List<BorrowerData> getDatalist() {
+        return datalist;
+    }
+
+    public void setDatalist(List<BorrowerData> datalist) {
+        this.datalist = datalist;
+    }
+
+    public String getBorrowType() {
+        return borrowType;
+    }
+
+    public void setBorrowType(String borrowType) {
+        this.borrowType = borrowType;
     }
 }

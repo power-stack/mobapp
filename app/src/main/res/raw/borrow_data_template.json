@@ -1,0 +1,24 @@
+{
+  "datalist":[
+    {
+      "datumId": 17,
+      "datumName":"央行征信报告"
+    },
+    {
+      "datumId": 43,
+      "datumName":"车辆保险"
+    },
+    {
+      "datumId": 44,
+      "datumName":"保险证明(医疗,社保..)"
+    },
+    {
+      "datumId": 1,
+      "datumName":"本人身份证"
+    },
+    {
+      "datumId": 46,
+      "datumName":"家访记录"
+    }
+  ]
+}

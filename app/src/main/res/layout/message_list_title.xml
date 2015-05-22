@@ -11,6 +11,20 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity="top|left|center" >
+            <TextView
+                android:id="@+id/message_list"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginRight="10dp"
+                android:gravity="center"
+                android:text="@string/message_list"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:gravity="top|right|center" >
             <TextView
                 android:id="@+id/delete_messages"

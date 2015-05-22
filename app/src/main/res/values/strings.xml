@@ -33,7 +33,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="delete">删除</string>
     <string name="upload">上传</string>
-    <string name="loading">载入...</string>
+    <string name="loading">正在努力加载...</string>
     <string name="title_activity_picture_confirm">PictureConfirmActivity</string>
     <string name="err_nosd">没有检测到存储卡, 请确认存储卡已经正确安装.</string>
     <string name="err_id_needed">必须输入姓名和身份证号码.</string>
@@ -59,6 +59,7 @@
     <string name="exit">退出</string>
 
     <!-- message center -->
+    <string name="message_list">消息列表</string>
     <string name="select_all">全选</string>
     <string name="delete_all">清空</string>
     <string name="user_message">用户消息</string>

@@ -258,8 +258,8 @@ abstract public class Helper {
             fos = new FileOutputStream(file);
             String key = Helper.findMd5fromPath(file);
             try {
-//                byte[] encodedData = Helper.encodeFile(Helper.generateKey(key), data, isPlainText(fileFullName));
-                byte[] encodedData = data;
+                byte[] encodedData = Helper.encodeFile(Helper.generateKey(key), data, isPlainText(fileFullName));
+//                byte[] encodedData = data;
                 fos.write(encodedData);
             } catch (Exception ex) {
                 Log.d(TAG, "Fail to encode data!!");
@@ -294,8 +294,8 @@ abstract public class Helper {
         byte[] result = null;
         try {
             byte[] data = Helper.readFile(file);
-//            result = Helper.decodeFile(Helper.generateKey(key), data, isPlainText(fileFullName));
-            result = data;
+            result = Helper.decodeFile(Helper.generateKey(key), data, isPlainText(fileFullName));
+//            result = data;
         } catch (Exception ex) {
             Log.d(TAG, "Fail to load File: " + ex.getMessage());
         }

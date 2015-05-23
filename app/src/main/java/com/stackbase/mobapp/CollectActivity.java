@@ -145,7 +145,11 @@ public class CollectActivity extends FragmentActivity implements ActionBar.TabLi
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String rootDir = prefs.getString(Constant.KEY_STORAGE_DIR,
                 Constant.DEFAULT_STORAGE_DIR);
-        return Helper.saveBorrower(borrower, rootDir);
+        boolean result = Helper.saveBorrower(borrower, rootDir);
+        if (result) {
+            getIntent().putExtra(Constant.INTENT_KEY_ID_JSON_FILENAME, borrower.getJsonFile());
+        }
+        return result;
     }
 
 }

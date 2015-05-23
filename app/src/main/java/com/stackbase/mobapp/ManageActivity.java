@@ -30,8 +30,9 @@ import com.stackbase.mobapp.activity.MessageCenterActivity;
 import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.utils.BitmapUtilities;
 import com.stackbase.mobapp.utils.Constant;
-import com.stackbase.mobapp.utils.HTTPUtils;
 import com.stackbase.mobapp.utils.Helper;
+import com.stackbase.mobapp.utils.RemoteAPI;
+import com.stackbase.mobapp.utils.RemoteException;
 import com.stackbase.mobapp.view.adapters.IUpdateCallback;
 import com.stackbase.mobapp.view.adapters.SwipeListViewAdapter;
 import com.stackbase.mobapp.view.adapters.SwipeListViewItem;
@@ -364,25 +365,31 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
             List<SwipeListViewItem> data = new ArrayList();
             String rootDir = prefs.getString(Constant.KEY_STORAGE_DIR,
                     Constant.DEFAULT_STORAGE_DIR);
-            for (Borrower borrower : Helper.loadBorrowersInfo(rootDir)) {
-                SwipeListViewItem item = new SwipeListViewItem();
-                item.setName(borrower.getName());
-                item.setId(borrower.getId());
-                item.setIdFileName(borrower.getJsonFile());
-                item.setUploadedProgress(borrower.getUploadedProgress());
-                item.setCurrentProgress(borrower.getUploadedProgress());
-                item.setUploading(false);
-                Bitmap icon = null;
-                if (borrower.getIdPicture1() != null && !borrower.getIdPicture1().equals("")) {
-                    icon = BitmapUtilities.getBitmapThumbnail(BitmapUtilities.getBitmap(
-                            borrower.getIdPicture1()), 50, 50);
+            try {
+                for (Borrower borrower : Helper.loadBorrowersInfo(rootDir)) {
+                    SwipeListViewItem item = new SwipeListViewItem();
+                    item.setName(borrower.getName());
+                    item.setId(borrower.getId());
+                    item.setIdFileName(borrower.getJsonFile());
+                    item.setUploadedProgress(borrower.getUploadedProgress());
+                    item.setCurrentProgress(borrower.getUploadedProgress());
+                    item.setUploading(false);
+                    Bitmap icon = null;
+                    if (borrower.getIdPicture1() != null && !borrower.getIdPicture1().equals("")) {
+                        icon = BitmapUtilities.getBitmapThumbnail(BitmapUtilities.getBitmap(
+                                borrower.getIdPicture1()), 50, 50);
+                    }
+                    if (icon != null) {
+                        item.setIcon(new BitmapDrawable(getResources(), icon));
+                    } else {
+                        item.setIcon(getResources().getDrawable(R.drawable.ic_stranger));
+                    }
+                    data.add(item);
                 }
-                if (icon != null) {
-                    item.setIcon(new BitmapDrawable(getResources(), icon));
-                } else {
-                    item.setIcon(getResources().getDrawable(R.drawable.ic_stranger));
+            } catch (RemoteException e) {
+                if (e.getStatusCode() == 500) {
+                    // TODO need login again
                 }
-                data.add(item);
             }
             // sort by name
             Collections.sort(data, new Comparator<SwipeListViewItem>() {
@@ -471,31 +478,14 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                 }
             }
             int allfiles = alljpgs.size();
+            RemoteAPI api = new RemoteAPI();
             for (int j = 0; j < allfiles; j++) {
                 try {
-                    //TODO: invoke remote server api
                     File jpg = alljpgs.get(j);
                     Log.d(TAG, "File: " + jpg.getPath());
-//                    HTTPUtils httpcon = new HTTPUtils("http://upload.eloancn.com/app/uploadUserDatum.action", "UTF-8");
-                    HTTPUtils httpcon = new HTTPUtils("http://192.168.1.66/app/uploadUserDatum.action", "UTF-8");
-                    httpcon.addFormField("imageName", jpg.getName());
-                    httpcon.addFormField("datumId", (new Integer(j)).toString());
-                    httpcon.addFormField("borrowId", (new Integer(j * 10)).toString());
-                    httpcon.addFormField("imgSize", (new Long(jpg.length())).toString());
-                    httpcon.addFormField("encryptpwd", "1234");
-
-                    httpcon.addFilePart("fileUpload", jpg);
-                    List<String> response = httpcon.finish();
-
-                    System.out.println("SERVER REPLIED:");
-
-                    for (String line : response) {
-                        System.out.println(line);
-                    }
-                    Thread.sleep(100);
+                    String result = api.uploadUserDatum(jpg, j, j * 10);
+                    System.out.println("SERVER REPLIED:" + result);
                     publishProgress(j * 100 / allfiles, true);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "Upload borrower error", e);
                 } catch (IOException ioe) {
                     Log.e(TAG, "Upload borrower error", ioe);
                 }

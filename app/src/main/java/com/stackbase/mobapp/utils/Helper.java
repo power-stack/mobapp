@@ -350,12 +350,12 @@ abstract public class Helper {
         return gpsFileName;
     }
 
-    public static ArrayList<Borrower> loadBorrowersInfo(String rootDir) throws RemoteException {
-        ArrayList<Borrower> borrowers = new ArrayList<>();
+    public static List<Borrower> loadBorrowersInfo(String rootDir) throws RemoteException {
+        List<Borrower> borrowers = new ArrayList<>();
         // try to load borrowers info from server first
         RemoteAPI api = new RemoteAPI();
         try {
-            api.listBorrowers();
+            borrowers = api.listBorrowers();
         } catch (IOException e) {
             if (e instanceof RemoteException) {
                 if (((RemoteException)e).getStatusCode() == 500) {
@@ -456,11 +456,7 @@ abstract public class Helper {
             for (File msgFile : file.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    if (filename.endsWith(MESSAGE_FILE_EXTENSION)) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return filename.endsWith(MESSAGE_FILE_EXTENSION);
                 }
             })) {
                 Message message = new Message(msgFile.getAbsolutePath());

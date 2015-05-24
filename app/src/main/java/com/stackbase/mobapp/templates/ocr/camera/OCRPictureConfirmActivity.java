@@ -69,8 +69,8 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
             int screenHeight = display.getHeight();
             //int screenWidth = getResources().getDisplayMetrics().widthPixels;
             //int screenHeight = getResources().getDisplayMetrics().heightPixels;
-            Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-            Log.i("ocr_bm", "" + bm.getWidth() + "," + bm.getHeight());
+            Bitmap bm1 = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+            Log.i("ocr_bm", "" + bm1.getWidth() + "," + bm1.getHeight());
             int topOffset = 0;
             int leftOffset = 0;
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -80,10 +80,13 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 topOffset = (screenHeight - this.ocrTpl.getHeight()) / 2;
                 leftOffset = (screenWidth - this.ocrTpl.getWidth()) / 2;
             }
-            bm = Bitmap.createBitmap(bm, leftOffset, topOffset, ocrTpl.getWidth(), ocrTpl.getHeight());
+            Bitmap bm;
+            Bitmap bm2 = Bitmap.createBitmap(bm1, leftOffset, topOffset, ocrTpl.getWidth(), ocrTpl.getHeight());
+            bm1.recycle();
+            bm1 = null;
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 // Notice that width and height are reversed
-                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
+                Bitmap scaled = Bitmap.createScaledBitmap(bm2, screenHeight, screenWidth, true);
                 int w = scaled.getWidth();
                 int h = scaled.getHeight();
                 // Setting post rotate to 90
@@ -93,10 +96,11 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
             } else {// LANDSCAPE MODE
                 //No need to reverse width and height
-                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenWidth, screenHeight, true);
+                Bitmap scaled = Bitmap.createScaledBitmap(bm2, screenWidth, screenHeight, true);
                 bm = scaled;
             }
-
+            bm2.recycle();
+            bm2 = null;
             pictureConfirmImageView.setImageBitmap(bm);
 
         }
@@ -149,6 +153,12 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.recaptureTextView:
+                String fileName1 = savePictureFromView();
+                Intent intent1 = new Intent();
+                intent1.putExtra(Constant.OCR_TEMPLATE, ocrTpl.getID());
+                intent1.setClass(this, OCRImageListActivity.class);
+                intent1.putExtra(Constant.INTENT_KEY_PIC_FULLNAME, fileName1);
+                startActivity(intent1);
                 break;
             case R.id.savePictureTextView:
                 String fileName = savePictureFromView();

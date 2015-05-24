@@ -18,6 +18,8 @@ public class InfoTemplate{
 
     private String _name = null;
 
+    private String _id = null;
+
     private String _desc = null;
 
     private int _width = 0;
@@ -106,4 +108,8 @@ public class InfoTemplate{
     public int getWidth() { return _width; }
 
     public int getHeight() { return _height; }
+
+    public String getID() {return _id;}
+
+    public void setID(String id) { this._id = id; }
 }

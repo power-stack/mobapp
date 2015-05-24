@@ -7,7 +7,6 @@ package com.stackbase.mobapp.templates;
 import android.content.res.Resources;
 
 import com.stackbase.mobapp.R;
-import com.stackbase.mobapp.objects.JSONObj;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -58,6 +57,7 @@ public class InfoTemplateManager {
                 String tid = (String)it.next();
                 JSONObject jobj = (JSONObject)jsonObject.get(tid);
                 InfoTemplate itpl = InfoTemplate.fromJSONObject(jobj);
+                itpl.setID(tid);
                 _itMap.put(tid, itpl);
             }
         }catch (IOException e){

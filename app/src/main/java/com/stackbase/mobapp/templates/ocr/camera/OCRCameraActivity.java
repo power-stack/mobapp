@@ -336,13 +336,14 @@ public class OCRCameraActivity extends Activity implements
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         Log.d(TAG, "In onPictureTaken");
+        String tplName = this.getIntent().getStringExtra(Constant.OCR_TEMPLATE);
         if (data != null) {
             Intent intent = new Intent();
             intent.setClass(OCRCameraActivity.this, OCRPictureConfirmActivity.class);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, saveTempImage(data));
             intent.putExtra(Constant.INTENT_KEY_PIC_FOLDER,
                     getIntent().getStringExtra(Constant.INTENT_KEY_PIC_FOLDER));
-            intent.putExtra(Constant.OCR_TEMPLATE, Constant.OCR_TPL_IDCARD_FRONT);
+            intent.putExtra(Constant.OCR_TEMPLATE, tplName);
             startActivityForResult(intent, 0);
             handler.stop();
         } else {

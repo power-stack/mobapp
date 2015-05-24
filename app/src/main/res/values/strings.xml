@@ -12,6 +12,7 @@
     <!-- capture -->
     <string name="use_picture">使用照片</string>
     <string name="retake">重拍</string>
+    <string name="ocr_cut_test">OCR检查</string>
     <string name="title_activity_select_picture_type">SelectPictureTypeActivity</string>
     <string name="action_settings">设置</string>
     <string name="camera_settings">相机设置</string>
@@ -76,4 +77,5 @@
     <string name="sd_damage">需要的外部存储(例如: SD卡)不可用或者已经损坏.</string>
 
     <string name="title_activity_test_acts">TestACTS</string>
+    <string name="title_activity_image_list_view">OCR分区</string>
 </resources>

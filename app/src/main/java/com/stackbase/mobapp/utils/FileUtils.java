@@ -1,8 +1,12 @@
 package com.stackbase.mobapp.utils;
 
+import android.os.Environment;
+import android.util.Log;
+
 import java.io.File;
 
 public final class FileUtils {
+    public final static String TAG = FileUtils.class.getSimpleName();
     public static boolean deleteDirectory(File directory) {
         if (directory != null && directory.exists()) {
             File[] files = directory.listFiles();
@@ -18,4 +22,5 @@ public final class FileUtils {
         }
         return (directory.delete());
     }
+
 }

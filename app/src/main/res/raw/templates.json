@@ -3,50 +3,50 @@
         "name": "idcard_front",
         "description": "身份证正面",
         "width": 933,
-        "height": 587,
+        "height": 550,
         "ocr-activity": "com.stackbase.mobapp.templates.ocr.camera.OCRCameraActivity",
         "ocr-rects": {
             "name":{
                 "type": "chinese",
                 "left": 165,
                 "right": 490,
-                "top": 75,
+                "top": 70,
                 "bottom": 130
             },
             "gender":{
                 "type": "chinese",
                 "values": ["男", "女"],
-                "left": 165,
+                "left": 175,
                 "right": 255,
-                "top": 155,
+                "top": 150,
                 "bottom": 210
             },
             "nationality":{
                 "type": "chinese",
                 "left": 353,
                 "right": 490,
-                "top": 155,
+                "top": 150,
                 "bottom": 210
             },
             "birthday":{
                 "type": "date",
                 "left": 165,
-                "right": 445,
-                "top": 225,
+                "right": 490,
+                "top": 215,
                 "bottom": 265
             },
             "address":{
                 "type": "mix",
                 "left": 165,
-                "right": 560,
-                "top": 300,
-                "bottom": 460
+                "right": 575,
+                "top": 280,
+                "bottom": 440
             },
             "id_number":{
                 "type": "mix",
                 "left": 310,
-                "right": 800,
-                "top": 485,
+                "right": 850,
+                "top": 455,
                 "bottom": 530
             }
         }

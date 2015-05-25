@@ -86,4 +86,7 @@
 
     <!-- remote api call -->
     <string name="call_api_failed">连接服务器失败, 错误代码: %s.</string>
+
+    <!-- login -->
+    <string name="require_username">请输入您的用户名和密码!</string>
 </resources>

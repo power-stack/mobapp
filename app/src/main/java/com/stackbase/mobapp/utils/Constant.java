@@ -90,6 +90,7 @@ abstract public class Constant {
     public static final String KEY_OCR_DOWNLOAD_URL = "preference_ocr_download_url";
     public static final String KEY_REMOTE_API_ENDPOINT = "preference_remote_api_endpoint";
     public static final String KEY_REMOTE_ACCESS_TOKEN = "preference_remote_access_token";
+    public static final String KEY_REMOTE_ACCESS_COOKIE = "preference_remote_access_cookie";
 
     public static final String INTENT_PACKAGE = "io.esse.mobapp";
 

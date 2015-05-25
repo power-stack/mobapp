@@ -1,7 +1,9 @@
 package com.stackbase.mobapp.objects;
 
 import android.content.Context;
+import android.os.Build;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,21 +15,26 @@ public class SIMCardInfo {
     private TelephonyManager tMgr;
     private String IMSI;
 
+    private final static String TAG = SIMCardInfo.class.getName();
+
     public SIMCardInfo(Context context) {
         tMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
     }
 
-    public long getNativePhoneNumber() throws Exception {
+    public long getNativePhoneNumber() {
         long nativePhoneNumber = 0;
-        String phoneNumber = tMgr.getLine1Number();
-        nativePhoneNumber = checkPhoneNum(phoneNumber);
+        try {
+            String phoneNumber = tMgr.getLine1Number();
+            nativePhoneNumber = checkPhoneNum(phoneNumber);
+        } catch (Exception e) {
+            Log.e(TAG, "Fail to get phone number.", e);
+        }
         return nativePhoneNumber;
     }
 
     public String getDeviceID() {
-        String deviceID = null;
-        deviceID = tMgr.getDeviceId();
-        return deviceID;
+        String model = Build.SERIAL;
+        return model;
     }
 
     public String getProviderName() {

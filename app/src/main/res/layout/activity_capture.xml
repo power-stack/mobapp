@@ -9,11 +9,11 @@
         android:layout_centerInParent="true"
         android:background="#0000"/>
 
-    <com.stackbase.mobapp.view.ViewfinderView
+    <!--com.stackbase.mobapp.view.ViewfinderView
         android:id="@+id/viewfinder_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:background="#0000"/>
+        android:background="#0000"/-->
 
     <RelativeLayout android:id="@+id/camera_button_view"
         android:layout_width="fill_parent"

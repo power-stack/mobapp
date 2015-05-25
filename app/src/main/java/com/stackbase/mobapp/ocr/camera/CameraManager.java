@@ -25,11 +25,9 @@ import android.hardware.Camera;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.SurfaceHolder;
-import android.util.Log;
 
 import com.stackbase.mobapp.camera.AutoFocusManager;
 import com.stackbase.mobapp.camera.PlanarYUVLuminanceSource;
-import com.stackbase.mobapp.templates.InfoTemplate;
 import com.stackbase.mobapp.utils.Constant;
 
 import java.io.IOException;
@@ -63,7 +61,6 @@ public final class CameraManager {
   private int requestedFramingRectWidth;
   private int requestedFramingRectHeight;
 
-  private InfoTemplate ocrInfo;
   /**
    * Preview frames are delivered here, which we pass on to the registered handler. Make sure to
    * clear the handler so it will only receive one message.
@@ -74,10 +71,6 @@ public final class CameraManager {
     this.context = context;
     this.configManager = new CameraConfigurationManager(context);
     previewCallback = new PreviewCallback(configManager);
-  }
-
-  public void setOcrInfo(InfoTemplate ocrInfo){
-    this.ocrInfo = ocrInfo;
   }
 
   /**
@@ -190,21 +183,18 @@ public final class CameraManager {
       if (camera == null) {
         return null;
       }
-      Log.i("OCR", this.ocrInfo.getName());
       Point screenResolution = configManager.getScreenResolution();
       if (screenResolution == null) {
         // Called early, before init even finished
         return null;
       }
-      //int width = screenResolution.x * 3/5;
-      int width = this.ocrInfo.getWidth();
+      int width = screenResolution.x * 3/5;
       if (width < MIN_FRAME_WIDTH) {
         width = MIN_FRAME_WIDTH;
       } else if (width > MAX_FRAME_WIDTH) {
         width = MAX_FRAME_WIDTH;
       }
-      //int height = screenResolution.y * 3/5;
-      int height = this.ocrInfo.getHeight();
+      int height = screenResolution.y * 3/5;
       if (height < MIN_FRAME_HEIGHT) {
         height = MIN_FRAME_HEIGHT;
       } else if (height > MAX_FRAME_HEIGHT) {

@@ -28,6 +28,7 @@ import com.stackbase.mobapp.utils.FallbackLocationTracker;
 import com.stackbase.mobapp.utils.Helper;
 import com.stackbase.mobapp.utils.LocationTracker;
 import com.stackbase.mobapp.view.ShutterButton;
+import com.stackbase.mobapp.view.ViewfinderView;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +95,8 @@ public final class CameraActivity extends Activity implements SurfaceHolder.Call
         shutterButton.setOnShutterButtonListener(this);
 
         cameraManager = new CameraManager(this);
+
+        ViewfinderView vfView = (ViewfinderView)findViewById(R.id.viewfinder_view);
 
         finishListener = new FinishListener(this);
 

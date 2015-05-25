@@ -28,6 +28,7 @@ import android.widget.ListView;
 
 import com.stackbase.mobapp.activity.MessageCenterActivity;
 import com.stackbase.mobapp.objects.Borrower;
+import com.stackbase.mobapp.objects.BorrowerData;
 import com.stackbase.mobapp.utils.BitmapUtilities;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
@@ -45,8 +46,10 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class ManageActivity extends Activity implements IUpdateCallback, View.OnClickListener {
     private static final String TAG = ManageActivity.class.getSimpleName();
@@ -368,7 +371,11 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
             try {
                 for (Borrower borrower : Helper.loadBorrowersInfo(rootDir)) {
                     SwipeListViewItem item = new SwipeListViewItem();
-                    item.setName(borrower.getName());
+                    if (borrower.getBorrowTypeDesc() != null && !borrower.getBorrowTypeDesc().equals("")) {
+                        item.setName(borrower.getName() + "(" + borrower.getBorrowTypeDesc() + ")");
+                    } else {
+                        item.setName(borrower.getName());
+                    }
                     item.setId(borrower.getId());
                     item.setIdFileName(borrower.getJsonFile());
                     item.setUploadedProgress(borrower.getUploadedProgress());
@@ -466,28 +473,37 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
             Log.d(TAG, String.format("Uploading: %s -- %s", this.item.getName(), borrower.getId()));
             publishProgress(this.item.getUploadedProgress(), true);
             File borrower_dir = (new File(borrower.getJsonFile())).getParentFile();
-            File[] borrower_files = borrower_dir.listFiles();
-            List<File> alljpgs = new ArrayList<File>();
-            for (int i = 0; i < borrower_files.length; i++) {
-                if (borrower_files[i].isDirectory()) {
-                    for (File afile : borrower_files[i].listFiles()) {
+            Map<BorrowerData, List<File>> allFiles = new HashMap<>();
+            int fileCount = 0;
+            for (BorrowerData data: borrower.getDatalist()) {
+                File fileFolder = new File(borrower_dir.getAbsolutePath() + File.separator +
+                        Helper.getBorrowDataSubFolder(borrower, data));
+                List<File> alljpgs = new ArrayList<>();
+                if (fileFolder.exists()) {
+                    for (File afile : fileFolder.listFiles()) {
                         if (afile.getName().endsWith(".jpg")) {
                             alljpgs.add(afile);
+                            fileCount++;
                         }
+                    }
+                    if (alljpgs.size() != 0) {
+                        allFiles.put(data, alljpgs);
                     }
                 }
             }
-            int allfiles = alljpgs.size();
             RemoteAPI api = new RemoteAPI();
-            for (int j = 0; j < allfiles; j++) {
-                try {
-                    File jpg = alljpgs.get(j);
-                    Log.d(TAG, "File: " + jpg.getPath());
-                    String result = api.uploadUserDatum(jpg, j, j * 10);
-                    System.out.println("SERVER REPLIED:" + result);
-                    publishProgress(j * 100 / allfiles, true);
-                } catch (IOException ioe) {
-                    Log.e(TAG, "Upload borrower error", ioe);
+            int i = 0;
+            for (BorrowerData data: allFiles.keySet()) {
+                for (File file: allFiles.get(data)) {
+                    try {
+                        Log.d(TAG, "File: " + file.getPath());
+                        String result = api.uploadUserDatum(file, data.getDatumId(),
+                                borrower.getBorrowId());
+                        System.out.println("SERVER REPLIED:" + result);
+                        publishProgress(i++ * 100 / fileCount, true);
+                    } catch (IOException ioe) {
+                        Log.e(TAG, "Upload borrower error", ioe);
+                    }
                 }
             }
             publishProgress(100, true);

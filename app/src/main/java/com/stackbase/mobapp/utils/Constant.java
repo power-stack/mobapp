@@ -61,7 +61,7 @@ abstract public class Constant {
     /**
      * The default url to connect to Server API
      */
-    public static final String DEFAULT_API_ENDPOINT = "http://inback.eloancn.com";
+    public static final String DEFAULT_API_ENDPOINT = "http://192.168.1.231:8089";
 
     public static final String KEY_PREFERENCE_CATEGORY_OCR = "preference_category_ocr";
     public static final String KEY_SOURCE_LANGUAGE_PREFERENCE = "sourceLanguageCodeOcrPref";

@@ -390,11 +390,13 @@ public class HTTPUtils {
 
         // headers
         if (headers != null) {
-            headers.put("User-Agent", "esse.io mobile Agent");
             for(String key : headers.keySet()) {
                 conn.addRequestProperty(key, headers.get(key));
             }
+        } else {
+            headers = new HashMap<>();
         }
+        headers.put("User-Agent", "esse.io mobile Agent");
 
         // body
         if (body != null) {

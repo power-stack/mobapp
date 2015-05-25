@@ -6,9 +6,7 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -142,10 +140,7 @@ public class CollectActivity extends FragmentActivity implements ActionBar.TabLi
     }
 
     public boolean saveBorrowerInfo(Borrower borrower) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String rootDir = prefs.getString(Constant.KEY_STORAGE_DIR,
-                Constant.DEFAULT_STORAGE_DIR);
-        boolean result = Helper.saveBorrower(borrower, rootDir);
+        boolean result = Helper.saveBorrower(borrower);
         if (result) {
             getIntent().putExtra(Constant.INTENT_KEY_ID_JSON_FILENAME, borrower.getJsonFile());
         }

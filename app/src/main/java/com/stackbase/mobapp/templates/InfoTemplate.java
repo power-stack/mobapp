@@ -28,6 +28,12 @@ public class InfoTemplate{
 
     private Class _ocr_activity_class = OCRActivity.class;
 
+    private HashMap<String, String> _langMap = new HashMap<>();
+
+    private HashMap<String, String[]> _valueMap = new HashMap<>();
+
+    private String[] _values = null;
+
     public InfoTemplate(){
         _ocrRectMap = new HashMap<String, Rect>();
     }
@@ -67,6 +73,13 @@ public class InfoTemplate{
                      * right  The X coordinate of the right side of the rectangle
                      * bottom The Y coordinate of the bottom of the rectangle
                      */
+                    if (rectJson.containsKey("language")) {
+                        _langMap.put(rectName, (String)rectJson.get("language"));
+                    }
+                    if (rectJson.containsKey("values")){
+                       // String[] values = (String[]) rectJson.get("values");
+                        //_valueMap.put(rectName, values);
+                    }
                     Long left = (Long)rectJson.get("left");
                     Long right = (Long)rectJson.get("right");
                     Long top = (Long)rectJson.get("top");
@@ -112,4 +125,12 @@ public class InfoTemplate{
     public String getID() {return _id;}
 
     public void setID(String id) { this._id = id; }
+
+    public String getRectLanguage(String rectName) {
+        return _langMap.get(rectName);
+    }
+
+    public String[] getRectValues(String rectName) {
+        return _valueMap.get(rectName);
+    }
 }

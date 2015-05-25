@@ -70,6 +70,16 @@ public class OCRImageListActivity extends Activity {
 
     static File storageDirectory;
 
+    final String getRectOCRLanguage(String name){
+        if (ocrTpl == null){
+            return null;
+        }
+        String lang = ocrTpl.getRectLanguage(name);
+        if (null == lang)
+            lang = DEFAULT_SOURCE_LANGUAGE_CODE;
+        return lang;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,7 +118,8 @@ public class OCRImageListActivity extends Activity {
                 TextView txtTitle = (TextView) view.findViewById(R.id.text);
 
                 ImageView imageView = (ImageView) view.findViewById(R.id.icon);
-                baseApi.init(storageDirectory.getAbsolutePath(), DEFAULT_SOURCE_LANGUAGE_CODE);
+
+                baseApi.init(storageDirectory.getAbsolutePath(), getRectOCRLanguage((String)txtTitle.getText()));
                 baseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SINGLE_LINE);
                 BitmapDrawable drawable = (BitmapDrawable)imageView.getDrawable();
                 baseApi.setImage(drawable.getBitmap());

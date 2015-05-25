@@ -7,46 +7,60 @@
         "ocr-activity": "com.stackbase.mobapp.templates.ocr.camera.OCRCameraActivity",
         "ocr-rects": {
             "name":{
-                "type": "chinese",
+                "language": "chi_sim",
                 "left": 165,
                 "right": 490,
                 "top": 70,
-                "bottom": 130
+                "bottom": 120
             },
             "gender":{
-                "type": "chinese",
+                "language": "chi_sim",
                 "values": ["男", "女"],
-                "left": 175,
+                "left": 165,
                 "right": 255,
-                "top": 150,
-                "bottom": 210
+                "top": 145,
+                "bottom": 200
             },
             "nationality":{
-                "type": "chinese",
-                "left": 353,
+                "language": "chi_sim",
+                "left": 360,
                 "right": 490,
-                "top": 150,
-                "bottom": 210
+                "top": 145,
+                "bottom": 200
             },
             "birthday":{
-                "type": "date",
+                "language": "chi_sim",
                 "left": 165,
                 "right": 490,
-                "top": 215,
+                "top": 210,
                 "bottom": 265
             },
-            "address":{
-                "type": "mix",
+            "address1":{
+                "language": "chi_sim",
                 "left": 165,
                 "right": 575,
                 "top": 280,
+                "bottom": 325
+            },
+            "address2":{
+                "language": "chi_sim",
+                "left": 165,
+                "right": 575,
+                "top": 327,
+                "bottom": 370
+            },
+            "address3":{
+                "language": "chi_sim",
+                "left": 165,
+                "right": 575,
+                "top": 372,
                 "bottom": 440
             },
             "id_number":{
-                "type": "mix",
+                "language": "eng",
                 "left": 310,
                 "right": 850,
-                "top": 455,
+                "top": 450,
                 "bottom": 530
             }
         }
@@ -54,24 +68,23 @@
     "ID_CARD_BACK": {
         "name": "idcard_back",
         "description": "身份证背面",
-        "width": 800,
-        "height": 500,
+        "width": 933,
+        "height": 550,
         "ocr-activity": "com.stackbase.mobapp.templates.ocr.camera.OCRCameraActivity",
         "ocr-rects": {
             "issued":{
-                "type": "chinese",
-                "left": 385,
+                "language": "chi_sim",
+                "left": 380,
                 "right": 800,
-                "top": 420,
-                "bottom": 460
+                "top": 380,
+                "bottom": 450
             },
-            "gender":{
-                "type": "chinese",
-                "values": ["男", "女"],
-                "left": 385,
+            "period":{
+                "language": "eng",
+                "left": 380,
                 "right": 800,
-                "top": 500,
-                "bottom": 540
+                "top": 460,
+                "bottom": 530
             }
         }
     }

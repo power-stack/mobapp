@@ -49,10 +49,16 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HTTPUtils {
     private static final String LINE_FEED = "\r\n";
+
+    public enum Result {
+        RESPONSE,
+        COOKIE
+    }
 
     /**
      * Send a get request
@@ -60,7 +66,7 @@ public class HTTPUtils {
      * @return response
      * @throws IOException
      */
-    static public String get(String url) throws IOException {
+    static public Map<Result, String>  get(String url) throws IOException {
         return get(url, null);
     }
 
@@ -71,7 +77,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String get(String url,
+    static public Map<Result, String>  get(String url,
                              Map<String, String> headers) throws IOException {
         return fetch("GET", url, null, headers);
     }
@@ -84,12 +90,12 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String post(String url, String body,
+    static public Map<Result, String>  post(String url, String body,
                               Map<String, String> headers) throws IOException {
         return fetch("POST", url, body, headers);
     }
 
-    static public String post(String url, Map<String, String> params,
+    static public Map<Result, String>  post(String url, Map<String, String> params,
                               Map<String, String> headers, File uploadFile) throws IOException {
         // creates a unique boundary based on time stamp
         final String boundary = "===" + System.currentTimeMillis() + "===";
@@ -158,11 +164,25 @@ public class HTTPUtils {
             // checks server's status code first
             int status = httpConn.getResponseCode();
             if (status == HttpURLConnection.HTTP_OK) {
+                Map<String, List<String>> repHeaders = httpConn.getHeaderFields();
                 InputStream is = httpConn.getInputStream();
                 String response = streamToString(is);
                 is.close();
+                Map<Result, String> result = new HashMap<>();
+                result.put(Result.RESPONSE, response);
+                if (repHeaders != null) {
+                    List<String> cookies = repHeaders.get("Set-Cookie");
+                    if (cookies != null) {
+                        for (String s: cookies) {
+                            if (s.indexOf("SESSIONID") >= 0) {
+                                result.put(Result.COOKIE, s);
+                                break;
+                            }
+                        }
+                    }
+                }
                 httpConn.disconnect();
-                return response;
+                return result;
             } else {
                 throw new RemoteException(httpConn.getResponseCode(),
                         String.format(ApplicationContextProvider.getContext().getString(
@@ -183,7 +203,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String post(String url, String body) throws IOException {
+    static public Map<Result, String>  post(String url, String body) throws IOException {
         return post(url, body, null);
     }
 
@@ -194,7 +214,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String postForm(String url, Map<String, String> params)
+    static public Map<Result, String>  postForm(String url, Map<String, String> params)
             throws IOException {
         return postForm(url, params, null);
     }
@@ -207,7 +227,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String postForm(String url, Map<String, String> params,
+    static public Map<Result, String>  postForm(String url, Map<String, String> params,
                                   Map<String, String> headers) throws IOException {
         // set content type
         if (headers == null) {
@@ -241,7 +261,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String put(String url, String body,
+    static public Map<Result, String>  put(String url, String body,
                              Map<String, String> headers) throws IOException {
         return fetch("PUT", url, body, headers);
     }
@@ -252,7 +272,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String put(String url, String body) throws IOException {
+    static public Map<Result, String>  put(String url, String body) throws IOException {
         return put(url, body, null);
     }
 
@@ -263,7 +283,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String delete(String url,
+    static public Map<Result, String>  delete(String url,
                                 Map<String, String> headers) throws IOException {
         return fetch("DELETE", url, null, headers);
     }
@@ -274,7 +294,7 @@ public class HTTPUtils {
      * @return response   Response as string
      * @throws IOException
      */
-    static public String delete(String url) throws IOException {
+    static public Map<Result, String>  delete(String url) throws IOException {
         return delete(url, null);
     }
 
@@ -372,10 +392,10 @@ public class HTTPUtils {
      * @param url         Url as string
      * @param body        Request body as string
      * @param headers     Optional map with headers
-     * @return response   Response as string
+     * @return response   Response as Map: key: response, value response
      * @throws IOException
      */
-    static public String fetch(String method, String url, String body,
+    static public Map<Result, String> fetch(String method, String url, String body,
                                Map<String, String> headers) throws IOException {
         // connection
         URL u = new URL(url);
@@ -420,9 +440,23 @@ public class HTTPUtils {
             } else {
                 // response
                 InputStream is = conn.getInputStream();
+                Map<String, List<String>> repHeaders = conn.getHeaderFields();
                 String response = streamToString(is);
                 is.close();
-                return response;
+                Map<Result, String> result = new HashMap<>();
+                result.put(Result.RESPONSE, response);
+                if (repHeaders != null) {
+                    List<String> cookies = repHeaders.get("Set-Cookie");
+                    if (cookies != null) {
+                        for (String s: cookies) {
+                            if (s.indexOf("SESSIONID") >= 0) {
+                                result.put(Result.COOKIE, s);
+                                break;
+                            }
+                        }
+                    }
+                }
+                return result;
             }
         } finally {
             conn.disconnect();

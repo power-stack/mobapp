@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/retake"
+            android:text="@string/ocr_cut_test"
             android:id="@+id/recaptureTextView"
             android:clickable="true"
             android:focusable="true"

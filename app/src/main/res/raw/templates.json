@@ -1,0 +1,91 @@
+{
+    "ID_CARD_FRONT": {
+        "name": "idcard_front",
+        "description": "身份证正面",
+        "width": 933,
+        "height": 550,
+        "ocr-activity": "com.stackbase.mobapp.templates.ocr.camera.OCRCameraActivity",
+        "ocr-rects": {
+            "name":{
+                "language": "chi_sim",
+                "left": 165,
+                "right": 490,
+                "top": 70,
+                "bottom": 120
+            },
+            "gender":{
+                "language": "chi_sim",
+                "values": ["男", "女"],
+                "left": 165,
+                "right": 255,
+                "top": 145,
+                "bottom": 200
+            },
+            "nationality":{
+                "language": "chi_sim",
+                "left": 360,
+                "right": 490,
+                "top": 145,
+                "bottom": 200
+            },
+            "birthday":{
+                "language": "chi_sim",
+                "left": 165,
+                "right": 490,
+                "top": 210,
+                "bottom": 265
+            },
+            "address1":{
+                "language": "chi_sim",
+                "left": 165,
+                "right": 575,
+                "top": 280,
+                "bottom": 325
+            },
+            "address2":{
+                "language": "chi_sim",
+                "left": 165,
+                "right": 575,
+                "top": 327,
+                "bottom": 370
+            },
+            "address3":{
+                "language": "chi_sim",
+                "left": 165,
+                "right": 575,
+                "top": 372,
+                "bottom": 440
+            },
+            "id_number":{
+                "language": "eng",
+                "left": 310,
+                "right": 850,
+                "top": 450,
+                "bottom": 530
+            }
+        }
+    },
+    "ID_CARD_BACK": {
+        "name": "idcard_back",
+        "description": "身份证背面",
+        "width": 933,
+        "height": 550,
+        "ocr-activity": "com.stackbase.mobapp.templates.ocr.camera.OCRCameraActivity",
+        "ocr-rects": {
+            "issued":{
+                "language": "chi_sim",
+                "left": 380,
+                "right": 800,
+                "top": 380,
+                "bottom": 450
+            },
+            "period":{
+                "language": "eng",
+                "left": 380,
+                "right": 800,
+                "top": 460,
+                "bottom": 530
+            }
+        }
+    }
+}

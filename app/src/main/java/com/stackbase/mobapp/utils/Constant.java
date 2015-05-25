@@ -105,4 +105,8 @@ abstract public class Constant {
     public static final String MESSAGE_KEY_PROGRESS_BAR_POSITION = "MESSAGE_KEY_PROGRESS_BAR_POSITION";
     public static final String MESSAGE_KEY_PROGRESS_BAR_PROGRESS = "MESSAGE_KEY_PROGRESS_BAR_PROGRESS";
     public static final String MESSAGE_KEY_PROGRESS_BORROWER_NAME = "MESSAGE_KEY_PROGRESS_BORROWER_NAME";
+
+    public static final String OCR_TEMPLATE = "OCR_TEMPLATE";
+    public static final String OCR_TPL_IDCARD_FRONT = "ID_CARD_FRONT";
+    public static final String OCR_TPL_IDCARD_BACK = "ID_CARD_BACK";
 }

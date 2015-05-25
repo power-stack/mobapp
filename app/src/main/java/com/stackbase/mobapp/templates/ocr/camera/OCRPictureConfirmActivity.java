@@ -1,6 +1,7 @@
-package com.stackbase.mobapp.activity;
+package com.stackbase.mobapp.templates.ocr.camera;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -12,12 +13,16 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.objects.GPSLocation;
+import com.stackbase.mobapp.templates.InfoTemplate;
+import com.stackbase.mobapp.templates.InfoTemplateManager;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
 
@@ -28,13 +33,14 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PictureConfirmActivity extends Activity implements View.OnClickListener {
+public class OCRPictureConfirmActivity extends Activity implements View.OnClickListener {
 
-    private static final String TAG = PictureConfirmActivity.class.getSimpleName();
+    private static final String TAG = OCRPictureConfirmActivity.class.getSimpleName();
     private TextView savePictureTextView;
     private TextView recaptureTextView;
     private ImageView pictureConfirmImageView;
     private String tempImageFile;
+    InfoTemplate ocrTpl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,9 @@ public class PictureConfirmActivity extends Activity implements View.OnClickList
         savePictureTextView.setOnClickListener(this);
         recaptureTextView.setOnClickListener(this);
 
+        InfoTemplateManager itManager = InfoTemplateManager.getInstance(getApplication().getResources());
+        String tplName = getIntent().getStringExtra(Constant.OCR_TEMPLATE);
+        ocrTpl = itManager.getTemplate(tplName);
         initImageView();
     }
 
@@ -54,13 +63,30 @@ public class PictureConfirmActivity extends Activity implements View.OnClickList
         tempImageFile = getIntent().getStringExtra(MediaStore.EXTRA_OUTPUT);
         if (tempImageFile != null) {
             byte[] data = Helper.loadFile(tempImageFile);
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
-            Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-
+            WindowManager manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+            Display display = manager.getDefaultDisplay();
+            int screenWidth = display.getWidth();
+            int screenHeight = display.getHeight();
+            //int screenWidth = getResources().getDisplayMetrics().widthPixels;
+            //int screenHeight = getResources().getDisplayMetrics().heightPixels;
+            Bitmap bm1 = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+            Log.i("ocr_bm", "" + bm1.getWidth() + "," + bm1.getHeight());
+            int topOffset = 0;
+            int leftOffset = 0;
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                topOffset = (screenWidth - this.ocrTpl.getHeight()) / 2;
+                leftOffset = (screenHeight - this.ocrTpl.getWidth()) / 2;
+            }else{
+                topOffset = (screenHeight - this.ocrTpl.getHeight()) / 2;
+                leftOffset = (screenWidth - this.ocrTpl.getWidth()) / 2;
+            }
+            Bitmap bm;
+            Bitmap bm2 = Bitmap.createBitmap(bm1, leftOffset, topOffset, ocrTpl.getWidth(), ocrTpl.getHeight());
+            bm1.recycle();
+            bm1 = null;
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 // Notice that width and height are reversed
-                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
+                Bitmap scaled = Bitmap.createScaledBitmap(bm2, screenHeight, screenWidth, true);
                 int w = scaled.getWidth();
                 int h = scaled.getHeight();
                 // Setting post rotate to 90
@@ -70,17 +96,13 @@ public class PictureConfirmActivity extends Activity implements View.OnClickList
                 bm = Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
             } else {// LANDSCAPE MODE
                 //No need to reverse width and height
-                Bitmap scaled = Bitmap.createScaledBitmap(bm, screenWidth, screenHeight, true);
+                Bitmap scaled = Bitmap.createScaledBitmap(bm2, screenWidth, screenHeight, true);
                 bm = scaled;
             }
-//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//            bm.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            bm2.recycle();
+            bm2 = null;
             pictureConfirmImageView.setImageBitmap(bm);
-//            try {
-//                stream.close();
-//            } catch (IOException e) {
-//                Log.e(TAG, "Fail to close stream.", e);
-//            }
+
         }
 
     }
@@ -109,7 +131,7 @@ public class PictureConfirmActivity extends Activity implements View.OnClickList
                 Log.e(TAG, "Fail to close stream.", e);
             }
 
-            Location location = CameraActivity.getLocationTracker().getLocation();
+            Location location = OCRCameraActivity.getLocationTracker().getLocation();
             Log.d(TAG, "location: " + location);
             if (location == null) {
                 //TODO: show this message in the message center.
@@ -131,6 +153,12 @@ public class PictureConfirmActivity extends Activity implements View.OnClickList
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.recaptureTextView:
+                String fileName1 = savePictureFromView();
+                Intent intent1 = new Intent();
+                intent1.putExtra(Constant.OCR_TEMPLATE, ocrTpl.getID());
+                intent1.setClass(this, OCRImageListActivity.class);
+                intent1.putExtra(Constant.INTENT_KEY_PIC_FULLNAME, fileName1);
+                startActivity(intent1);
                 break;
             case R.id.savePictureTextView:
                 String fileName = savePictureFromView();

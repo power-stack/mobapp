@@ -81,10 +81,6 @@ public class LoginActivity extends Activity {
                             Toast.makeText(getApplicationContext(), "Fail to login the server!!!",
                                     Toast.LENGTH_LONG).show();
                         }
-                        Intent intent = new Intent();
-                        intent.setClass(LoginActivity.this, HomePage.class);
-                        startActivity(intent);
-                        LoginActivity.this.finish();
 //                        } else {
 //                            Toast.makeText(getApplicationContext(), "Fail to get the phone number, please check your mobile!!!",
 //                                    Toast.LENGTH_LONG).show();

@@ -492,13 +492,12 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                 }
             }
             RemoteAPI api = new RemoteAPI();
-            int i = 0;
+            int i = 1;
             for (BorrowerData data: allFiles.keySet()) {
                 for (File file: allFiles.get(data)) {
                     try {
                         Log.d(TAG, "File: " + file.getPath());
-                        String result = api.uploadUserDatum(file, data.getDatumId(),
-                                borrower.getBorrowId());
+                        String result = api.uploadUserDatum(file, borrower, data);
                         System.out.println("SERVER REPLIED:" + result);
                         publishProgress(i++ * 100 / fileCount, true);
                     } catch (IOException ioe) {

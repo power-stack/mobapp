@@ -18,8 +18,9 @@ public class Borrower extends JSONObj {
     private String jsonFile = "";
     private int uploadedProgress = 0;
     private int borrowType;
-    private int borrowId;
+    private long borrowId;
     private String borrowTypeDesc = "";
+    private long ownerid;
     private List<BorrowerData> datalist = null;
 
     public Borrower() {
@@ -150,11 +151,11 @@ public class Borrower extends JSONObj {
         this.borrowType = borrowType;
     }
 
-    public int getBorrowId() {
+    public long getBorrowId() {
         return borrowId;
     }
 
-    public void setBorrowId(int borrowId) {
+    public void setBorrowId(long borrowId) {
         this.borrowId = borrowId;
     }
 
@@ -164,5 +165,13 @@ public class Borrower extends JSONObj {
 
     public void setBorrowTypeDesc(String borrowTypeDesc) {
         this.borrowTypeDesc = borrowTypeDesc;
+    }
+
+    public long getOwnerid() {
+        return ownerid;
+    }
+
+    public void setOwnerid(long ownerid) {
+        this.ownerid = ownerid;
     }
 }

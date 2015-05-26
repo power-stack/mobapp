@@ -36,16 +36,22 @@ package com.stackbase.mobapp.utils;
 import com.stackbase.mobapp.ApplicationContextProvider;
 import com.stackbase.mobapp.R;
 
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MIME;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -53,8 +59,6 @@ import java.util.List;
 import java.util.Map;
 
 public class HTTPUtils {
-    private static final String LINE_FEED = "\r\n";
-
     public enum Result {
         RESPONSE,
         COOKIE
@@ -95,104 +99,49 @@ public class HTTPUtils {
         return fetch("POST", url, body, headers);
     }
 
-    static public Map<Result, String>  post(String url, Map<String, String> params,
+    static public Map<Result, String>  post(String url,
                               Map<String, String> headers, File uploadFile) throws IOException {
-        // creates a unique boundary based on time stamp
-        final String boundary = "===" + System.currentTimeMillis() + "===";
-        String charset = "UTF-8";
-        URL u = new URL(url);
-        HttpURLConnection httpConn = null;
+        HttpClient httpclient = new DefaultHttpClient();
         try {
-            httpConn = (HttpURLConnection)u.openConnection();
-            httpConn.setConnectTimeout(10000);
-            httpConn.setReadTimeout(10000);
-            httpConn.setUseCaches(false);
-            httpConn.setDoOutput(true); // indicates POST method
-            httpConn.setDoInput(true);
-            httpConn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-            httpConn.setRequestProperty("User-Agent", "esse.io mobile Agent");
-            OutputStream outputStream = httpConn.getOutputStream();
-            PrintWriter writer = null;
-            try {
-                writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);
-                // Header part
-                if (headers != null) {
-                    for (String name : headers.keySet()) {
-                        writer.append(name + ": " + headers.get(name)).append(LINE_FEED);
-                        writer.flush();
-                    }
-                }
-                // Param part
-                if (params != null) {
-                    for (String name : params.keySet()) {
-                        writer.append("--" + boundary).append(LINE_FEED);
-                        writer.append("Content-Disposition: form-data; name=\"" + name + "\"").append(LINE_FEED);
-                        writer.append("Content-Type: text/plain; charset=" + charset).append(LINE_FEED);
-                        writer.append(LINE_FEED);
-                        writer.append(params.get(name)).append(LINE_FEED);
-                        writer.flush();
-                    }
-                }
-                // File part
-                String fileName = uploadFile.getName();
-                writer.append("--" + boundary).append(LINE_FEED);
-                writer.append("Content-Disposition: form-data; name=\"fileUpload\"; filename=\"" + fileName + "\"").append(LINE_FEED);
-                writer.append("Content-Type: " + URLConnection.guessContentTypeFromName(fileName)).append(LINE_FEED);
-                writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
-                writer.append(LINE_FEED);
-                writer.flush();
 
-                FileInputStream inputStream = new FileInputStream(uploadFile);
-                byte[] buffer = new byte[4096];
-                int bytesRead = -1;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                outputStream.flush();
-                inputStream.close();
-                writer.append(LINE_FEED);
-                writer.flush();
-
-                // Finish
-                writer.append(LINE_FEED).flush();
-                writer.append("--" + boundary + "--").append(LINE_FEED);
-            } finally {
-                if (writer != null) {
-                    writer.close();
+            HttpPost httppost = new HttpPost(url);
+            if (headers != null) {
+                for (String name : headers.keySet()) {
+                    httppost.addHeader(name, headers.get(name));
                 }
             }
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.setCharset(MIME.UTF8_CHARSET);
+            builder.addBinaryBody("uploadify", uploadFile, ContentType.MULTIPART_FORM_DATA,
+                    uploadFile.getName());
+            httppost.setEntity(builder.build());
+            HttpResponse response = httpclient.execute(httppost);
+            int status = response.getStatusLine().getStatusCode();
             // checks server's status code first
-            int status = httpConn.getResponseCode();
             if (status == HttpURLConnection.HTTP_OK) {
-                Map<String, List<String>> repHeaders = httpConn.getHeaderFields();
-                InputStream is = httpConn.getInputStream();
-                String response = streamToString(is);
-                is.close();
+                Header[] repHeaders = response.getAllHeaders();
+//                InputStream is = httpConn.getInputStream();
+                String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+
+//                is.close();
                 Map<Result, String> result = new HashMap<>();
-                result.put(Result.RESPONSE, response);
+                result.put(Result.RESPONSE, responseBody);
                 if (repHeaders != null) {
-                    List<String> cookies = repHeaders.get("Set-Cookie");
-                    if (cookies != null) {
-                        for (String s: cookies) {
-                            if (s.indexOf("SESSIONID") >= 0) {
-                                result.put(Result.COOKIE, s);
-                                break;
-                            }
+                    for (Header header: repHeaders) {
+                        if (header.getName().equals("Set-Cookie")) {
+                            result.put(Result.COOKIE, header.getValue());
                         }
                     }
                 }
-                httpConn.disconnect();
                 return result;
             } else {
-                throw new RemoteException(httpConn.getResponseCode(),
+                throw new RemoteException(status,
                         String.format(ApplicationContextProvider.getContext().getString(
                                 R.string.call_api_failed),
                         status));
             }
         } finally {
-            if (httpConn != null) {
-                httpConn.disconnect();
-            }
+            httpclient.getConnectionManager().shutdown();
         }
     }
 
@@ -400,8 +349,8 @@ public class HTTPUtils {
         // connection
         URL u = new URL(url);
         HttpURLConnection conn = (HttpURLConnection)u.openConnection();
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
+        conn.setConnectTimeout(50000);
+        conn.setReadTimeout(60000);
 
         // method
         if (method != null) {

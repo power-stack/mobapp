@@ -12,10 +12,16 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.widget.GridView;
 
 import com.stackbase.mobapp.objects.Borrower;
+import com.stackbase.mobapp.objects.BorrowerData;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
+import com.stackbase.mobapp.view.adapters.DataTypeGridViewAdapter;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,9 +146,30 @@ public class CollectActivity extends FragmentActivity implements ActionBar.TabLi
     }
 
     public boolean saveBorrowerInfo(Borrower borrower) {
+        if (borrower.getDatalist() == null || borrower.getDatalist().size() == 0) {
+            // Load borrow type from template
+            Log.d(TAG, "Can not find the borrow type from borrower json file, will load it from template.");
+            List<BorrowerData> templateDats = new ArrayList<>();
+            JSONObject json = Helper.loadJsonFromRaw(getResources(), R.raw.borrow_data_template);
+            Object obj = json.get("datalist");
+            if (obj != null && obj instanceof JSONArray) {
+                for (Object jobj: ((JSONArray) obj)) {
+                    BorrowerData data = new BorrowerData();
+                    Helper.covertJson(data, ((JSONObject) jobj));
+                    templateDats.add(data);
+                }
+            }
+            borrower.setDatalist(templateDats);
+        }
         boolean result = Helper.saveBorrower(borrower);
         if (result) {
             getIntent().putExtra(Constant.INTENT_KEY_ID_JSON_FILENAME, borrower.getJsonFile());
+        }
+        GridView gridview = (GridView) findViewById(R.id.fragment_otherinfo_gridview);
+
+        String jsonFile = getIntent().getStringExtra(Constant.INTENT_KEY_ID_JSON_FILENAME);
+        if (jsonFile != null && !jsonFile.equals("")) {
+            gridview.setAdapter(new DataTypeGridViewAdapter(this, borrower));
         }
         return result;
     }

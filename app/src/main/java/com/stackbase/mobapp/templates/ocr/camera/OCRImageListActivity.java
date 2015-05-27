@@ -124,6 +124,8 @@ public class OCRImageListActivity extends Activity {
                 BitmapDrawable drawable = (BitmapDrawable)imageView.getDrawable();
                 baseApi.setImage(drawable.getBitmap());
                 String outputText = baseApi.getUTF8Text();
+                outputText = outputText.replaceAll("T", "1");
+                outputText = outputText.replaceAll("o", "0");
                 String txt = txtTitle.getText() + ": " + outputText;
                 Log.i(TAG, txt);
                 Toast.makeText(parent.getContext(), txt, Toast.LENGTH_SHORT).show();

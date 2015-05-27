@@ -46,7 +46,7 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        setContentView(R.layout.activity_picture_confirm);
+        setContentView(R.layout.activity_ocr_picture_confirm);
         savePictureTextView = (TextView) findViewById(R.id.savePictureTextView);
         recaptureTextView = (TextView) findViewById(R.id.recaptureTextView);
         pictureConfirmImageView = (ImageView) findViewById(R.id.pictureConfirmImageView);

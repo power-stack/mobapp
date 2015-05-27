@@ -60,6 +60,7 @@ public class OCRCameraActivityHandler extends Handler implements Helper.ErrorCal
         state = State.DONE;
         if (cameraManager != null) {
             cameraManager.stopPreview();
+            cameraManager.closeDriver();
         }
     }
 

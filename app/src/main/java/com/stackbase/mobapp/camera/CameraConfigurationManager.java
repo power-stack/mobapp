@@ -196,10 +196,16 @@ final class CameraConfigurationManager {
             if (pixels < MIN_PREVIEW_PIXELS || pixels > MAX_PREVIEW_PIXELS) {
                 continue;
             }
+            int sx = screenResolution.x;
+            int sy = screenResolution.y;
+            if (sx < sy) {
+                sx = sy;
+                sy = screenResolution.x;
+            }
             boolean isCandidatePortrait = realWidth < realHeight;
             int maybeFlippedWidth = isCandidatePortrait ? realHeight : realWidth;
             int maybeFlippedHeight = isCandidatePortrait ? realWidth : realHeight;
-            if (maybeFlippedWidth == screenResolution.x && maybeFlippedHeight == screenResolution.y) {
+            if (maybeFlippedWidth == sx && maybeFlippedHeight == sy) {
                 Point exactPoint = new Point(realWidth, realHeight);
                 Log.i(TAG, "Found preview size exactly matching screen size: " + exactPoint);
                 return exactPoint;

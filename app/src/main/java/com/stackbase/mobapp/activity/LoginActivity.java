@@ -71,11 +71,6 @@ public class LoginActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if (v == btn) {
-                    Intent intent = new Intent();
-                    intent.setClass(LoginActivity.this, HomePage.class);
-                    startActivity(intent);
-                    LoginActivity.this.finish();
-
                     progressDialog = new ProgressDialog(LoginActivity.this);
                     progressDialog.setMessage(getString(R.string.loading));
                     progressDialog.setCancelable(false);
@@ -106,13 +101,11 @@ public class LoginActivity extends Activity {
                                 Log.d(TAG, "Login successful!!!");
                                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                                 prefs.edit().putString(Constant.KEY_REMOTE_ACCESS_TOKEN, bean.getEncryptpwd()).apply();
-//                                prefs.edit().putString(Constant.DEFAULT_MESSAGE_DIR, usrInfo).apply();
-//                                prefs.edit().putString(Constant.DEFAULT_MESSAGE_DIR, pwdInfo).apply();
 
-//                                Intent intent = new Intent();
-//                                intent.setClass(LoginActivity.this, HomePage.class);
-//                                startActivity(intent);
-//                                LoginActivity.this.finish();
+                                Intent intent = new Intent();
+                                intent.setClass(LoginActivity.this, HomePage.class);
+                                startActivity(intent);
+                                LoginActivity.this.finish();
                             }
                         } catch (IOException e) {
                             Log.e(TAG, "Login fail!", e);

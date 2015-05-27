@@ -10,16 +10,14 @@
         android:id="@+id/loginUI"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
-
-
     </RelativeLayout>
-
 
     <EditText
         android:id="@+id/usrName"
         android:layout_width="240dp"
         android:layout_height="60dp"
-        android:hint="输入用户名"
+        android:hint="@string/input_username"
+        android:singleLine="true"
         android:layout_marginTop="36dp"
         android:layout_below="@+id/loginUI"
         android:layout_centerHorizontal="true">
@@ -29,27 +27,28 @@
         android:id="@+id/pwd"
         android:layout_width="240dp"
         android:layout_height="60dp"
-        android:hint="输入密码"
+        android:hint="@string/input_pwd"
+        android:singleLine="true"
+        android:inputType="textPassword"
         android:layout_below="@+id/usrName"
         android:layout_centerHorizontal="true">
     </EditText>
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/display_pwd"
+        android:layout_below="@+id/pwd"
+        android:layout_alignLeft="@+id/pwd"
+        android:layout_alignStart="@+id/pwd" />
 
     <Button
         android:layout_width="200dp"
         android:layout_height="60dp"
         android:id="@+id/loginBtn"
-        android:text="登录"
+        android:text="@string/login_btn"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
-<!--
-    <EditText
-        android:id="@+id/phone"
-        android:layout_width="140dp"
-        android:layout_height="60dp"
-        android:hint="输入手机号"
-        android:layout_below="@+id/pwd"
-        android:layout_toRightOf="@+id/loginUI"
-        android:layout_toEndOf="@+id/loginUI">
-    </EditText>
--->
+
 </RelativeLayout>

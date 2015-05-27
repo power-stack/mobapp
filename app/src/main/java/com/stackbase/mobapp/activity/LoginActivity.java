@@ -94,6 +94,11 @@ public class LoginActivity extends Activity {
             String pwdInfo = ePWD.getText().toString().trim();
             SIMCardInfo simInfo = new SIMCardInfo(LoginActivity.this);
             boolean authentication = false;
+            if (usrInfo.equals("esse.io") && pwdInfo.equals("ESSE")){
+                Log.d(TAG, "login as demo user!");
+                authentication = true;
+                publishMessage(false, "Login as demo user!");
+            }
             if (!usrInfo.equals("") && !pwdInfo.equals("")) {
                 SharedPreferences.Editor editor = sp.edit();
                 editor.putString(Constant.KEY_USERNAME, usrInfo);

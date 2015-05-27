@@ -20,7 +20,6 @@ import android.view.WindowManager;
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.activity.FinishListener;
 import com.stackbase.mobapp.camera.BeepManager;
-import com.stackbase.mobapp.ocr.OCRActivity;
 import com.stackbase.mobapp.templates.InfoTemplate;
 import com.stackbase.mobapp.templates.InfoTemplateManager;
 import com.stackbase.mobapp.utils.Constant;
@@ -38,7 +37,7 @@ import java.io.IOException;
 public class OCRCameraActivity extends Activity implements
         SurfaceHolder.Callback, ShutterButton.OnShutterButtonListener, Camera.PictureCallback {
 
-    private static final String TAG = OCRActivity.class.getSimpleName();
+    private static final String TAG = OCRCameraActivity.class.getSimpleName();
 
     private OCRCameraManager cameraManager;
     private OCRCameraActivityHandler handler;

@@ -30,7 +30,7 @@ final class OCRCameraConfigurationManager {
     // below will still select the default (presumably 320x240) size for these. This prevents
     // accidental selection of very low resolution on some devices.
     private static final int MIN_PREVIEW_PIXELS = 470 * 320; // normal screen
-    private static final int MAX_PREVIEW_PIXELS = 800 * 600; // more than large/HD screen
+    private static final int MAX_PREVIEW_PIXELS = 1920 * 1080; // more than large/HD screen
 
     private final Context context;
     private Point screenResolution;
@@ -135,7 +135,7 @@ final class OCRCameraConfigurationManager {
         }
 
         parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
-
+        parameters.setPictureSize(cameraResolution.x, cameraResolution.y);
         parameters.setPictureFormat(ImageFormat.JPEG);
 //        parameters.set("jpeg-quality", 100);
         camera.setParameters(parameters);
@@ -194,6 +194,7 @@ final class OCRCameraConfigurationManager {
             if (pixels < MIN_PREVIEW_PIXELS || pixels > MAX_PREVIEW_PIXELS) {
                 continue;
             }
+            Log.i(TAG, "Checking preview size: " + realWidth + " x " + realHeight);
             boolean isCandidatePortrait = realWidth < realHeight;
             int maybeFlippedWidth = isCandidatePortrait ? realHeight : realWidth;
             int maybeFlippedHeight = isCandidatePortrait ? realWidth : realHeight;

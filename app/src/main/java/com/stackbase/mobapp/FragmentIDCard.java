@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 
 import com.stackbase.mobapp.objects.Borrower;
-import com.stackbase.mobapp.ocr.OCRActivity;
 import com.stackbase.mobapp.templates.InfoTemplate;
 import com.stackbase.mobapp.templates.InfoTemplateManager;
 import com.stackbase.mobapp.utils.Constant;

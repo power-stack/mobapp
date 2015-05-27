@@ -32,7 +32,7 @@ final class CameraConfigurationManager {
     // below will still select the default (presumably 320x240) size for these. This prevents
     // accidental selection of very low resolution on some devices.
     private static final int MIN_PREVIEW_PIXELS = 470 * 320; // normal screen
-    private static final int MAX_PREVIEW_PIXELS = 800 * 600; // more than large/HD screen
+    private static final int MAX_PREVIEW_PIXELS = 1920 * 1080; // more than large/HD screen
 
     private final Context context;
     private Point screenResolution;
@@ -137,7 +137,7 @@ final class CameraConfigurationManager {
         }
 
         parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
-
+        parameters.setPictureSize(cameraResolution.x, cameraResolution.y);
         parameters.setPictureFormat(ImageFormat.JPEG);
 //        parameters.set("jpeg-quality", 100);
         camera.setParameters(parameters);

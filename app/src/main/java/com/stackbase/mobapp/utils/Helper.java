@@ -44,6 +44,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -352,17 +353,50 @@ abstract public class Helper {
     }
 
     public static String getGPSFileName(String pictureFileName) {
-        String gpsFileName = pictureFileName.substring(0, pictureFileName.length() - ".jpg".length()) + ".gs";
-        return gpsFileName;
+        return pictureFileName.substring(0, pictureFileName.length() - ".jpg".length()) + ".gs";
     }
 
-    public static List<Borrower> loadBorrowersInfo(String rootDir) throws RemoteException {
+    public static Collection<Borrower> loadBorrowersInfo(String rootDir) throws RemoteException {
         List<Borrower> borrowers = new ArrayList<>();
+        List<Borrower> localBs = new ArrayList<>();
+        File brDir = new File(rootDir);
+        if (brDir.isDirectory()) {
+            for (File file : brDir.listFiles()) {
+                if (isValidMD5(file.getName())) {
+                    String jsonFile = file.getAbsolutePath() + File.separator
+                            + BORROWER_FILE_NAME;
+                    try {
+                        Borrower b = new Borrower(jsonFile);
+                        localBs.add(b);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Fail to load borrower info from local, will delete it.");
+                        Helper.deleteBorrower(jsonFile);
+                    }
+                }
+            }
+        }
         // try to load borrowers info from server first
         RemoteAPI api = new RemoteAPI();
         try {
             borrowers = api.listBorrowers();
+            // Delete the borrower info from local if it is not the list from remote server
+            for (Borrower borrower: localBs) {
+                boolean findIt = false;
+                for (Borrower rb: borrowers) {
+                    if (rb.getJsonFile().equals(borrower.getJsonFile())) {
+                        findIt = true;
+                        break;
+                    }
+                }
+                if (!findIt) {
+                    Log.d(TAG, "Can not find the borrower " + borrower.getName() +
+                            ":" + borrower.getId() + ": " + borrower.getBorrowTypeDesc() + ", from remote server!");
+                    Log.d(TAG, "Delete it from local storage");
+                    Helper.deleteBorrower(borrower.getJsonFile());
+                }
+            }
         } catch (IOException e) {
+            Log.e(TAG, "Fail to load borrower list from server.", e);
             if (e instanceof RemoteException) {
                 if (((RemoteException)e).getStatusCode() == 500) {
                     Log.d(TAG, "Need login again!");
@@ -370,15 +404,7 @@ abstract public class Helper {
                 }
             }
             Log.d(TAG, "Load borrower info from local.");
-            File brDir = new File(rootDir);
-            if (brDir.isDirectory()) {
-                for (File file : brDir.listFiles()) {
-                    if (isValidMD5(file.getName())) {
-                        borrowers.add(new Borrower(file.getAbsolutePath() + File.separator
-                                + BORROWER_FILE_NAME));
-                    }
-                }
-            }
+            return localBs;
         }
         return borrowers;
     }
@@ -433,11 +459,7 @@ abstract public class Helper {
             File[] msgs = file.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    if (filename.endsWith(MESSAGE_FILE_EXTENSION)) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return filename.endsWith(MESSAGE_FILE_EXTENSION);
                 }
             });
             for (File msgFile : msgs) {

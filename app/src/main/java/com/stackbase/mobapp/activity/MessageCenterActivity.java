@@ -132,8 +132,10 @@ public class MessageCenterActivity extends Activity implements IMessageCallback,
     public void onClick(View v) {
         if (v == cleanAll) {
             for (MessageViewItem item : data) {
-                File file = new File(item.getMessageFileName());
-                file.delete();
+                if (item.getMessageFileName() != null && !item.getMessageFileName().equals("")) {
+                    File file = new File(item.getMessageFileName());
+                    if (file.exists()) file.delete();
+                }
             }
             data.clear();
             adapter.notifyDataSetChanged();

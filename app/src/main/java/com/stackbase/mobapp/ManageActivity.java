@@ -501,8 +501,10 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                         System.out.println("SERVER REPLIED:" + result);
                         publishProgress(i++ * 100 / fileCount, true);
                     } catch (IOException ioe) {
+                        publishProgress(100, false);
                         this.item.setUploading(false);
-                        publishProgress(i * 100 / fileCount, false);
+                        this.item.setUploadedProgress(0);
+                        this.item.setCurrentProgress(0);
                         Log.e(TAG, "Upload borrower error", ioe);
                         return;
                     }

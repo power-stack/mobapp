@@ -145,10 +145,10 @@ public class MessageCenterActivity extends Activity implements IMessageCallback,
     @Override
     protected void onPause() {
         for (MessageViewItem item : data) {
-            String fileName = item.getMessageFileName();
-            Message message = new Message(fileName);
-            message.setRead(true);
             try {
+                String fileName = item.getMessageFileName();
+                Message message = new Message(fileName);
+                message.setRead(true);
                 Helper.saveFile(fileName, message.toJson().toString().getBytes("UTF-8"));
             } catch (UnsupportedEncodingException ue) {
                 Log.e(TAG, "Fail to save message", ue);

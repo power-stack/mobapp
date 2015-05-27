@@ -65,6 +65,8 @@ public class OCRCameraActivity extends Activity implements
         return locationTracker;
     }
 
+    private String borrowerJsonPath;
+
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -94,6 +96,8 @@ public class OCRCameraActivity extends Activity implements
         cpView.setCameraManager(cameraManager);
         cpView.setInfoTemplate(ocrTpl);
         locationTracker = new FallbackLocationTracker(this);
+
+        borrowerJsonPath = this.getIntent().getStringExtra(Constant.INTENT_KEY_ID_JSON_FILENAME);
     }
 
     @Override
@@ -339,6 +343,7 @@ public class OCRCameraActivity extends Activity implements
         if (data != null) {
             Intent intent = new Intent();
             intent.setClass(OCRCameraActivity.this, OCRPictureConfirmActivity.class);
+            intent.putExtra(Constant.INTENT_KEY_ID_JSON_FILENAME, borrowerJsonPath);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, saveTempImage(data));
             intent.putExtra(Constant.INTENT_KEY_PIC_FOLDER,
                     getIntent().getStringExtra(Constant.INTENT_KEY_PIC_FOLDER));

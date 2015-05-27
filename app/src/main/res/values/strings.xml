@@ -90,12 +90,11 @@
 
     <!-- login -->
     <string name="require_username">请输入您的用户名和密码!</string>
-    
-    <!-- Login layout ui -->
     <string name="input_username">用户名</string>
     <string name="input_pwd">密码</string>
     <string name="display_pwd">显示密码</string>
     <string name="login_btn">登  录</string>
+    <string name="invalid_password">错误的用户名或密码，请重试！</string>
 
     <string name="title_activity_test_acts">TestACTS</string>
     <string name="title_activity_image_list_view">OCR分区</string>

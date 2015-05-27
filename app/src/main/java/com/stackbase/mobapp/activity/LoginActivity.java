@@ -7,7 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -25,6 +26,7 @@ import com.stackbase.mobapp.objects.LoginBean;
 import com.stackbase.mobapp.objects.SIMCardInfo;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.RemoteAPI;
+import com.stackbase.mobapp.utils.RemoteException;
 
 import java.io.IOException;
 
@@ -34,9 +36,13 @@ public class LoginActivity extends Activity {
     private EditText ePWD;
     private Button btn;
     private CheckBox checkBox;
-    private final static String TAG = LoginActivity.class.getName();
     private ProgressDialog progressDialog;
     private SharedPreferences sp;
+    private MessageHandler handler = new MessageHandler();
+    private final static int MSG_WHAT_LOGIN = 100;
+    private final static String MSG_KEY_LOGIN_RESULT = "MSG_KEY_LOGIN_RESULT";
+    private final static String MSG_KEY_LOGIN_MSG = "MSG_KEY_LOGIN_MSG";
+    private final static String TAG = LoginActivity.class.getName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +55,7 @@ public class LoginActivity extends Activity {
         btn = (Button) findViewById(R.id.loginBtn);
 
         sp = this.getSharedPreferences("UserInfo", Context.MODE_PRIVATE);
-        eUsr.setText(sp.getString("userName", ""));
-        ePWD.setText(sp.getString("pwd", ""));
+        eUsr.setText(sp.getString(Constant.KEY_USERNAME, ""));
 
         eUsr.setLongClickable(false);
         ePWD.setLongClickable(false);
@@ -75,55 +80,8 @@ public class LoginActivity extends Activity {
                     progressDialog.setMessage(getString(R.string.loading));
                     progressDialog.setCancelable(false);
                     progressDialog.show();
-                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-                    StrictMode.setThreadPolicy(policy);
 
-                    String usrInfo = eUsr.getText().toString().trim();
-                    String pwdInfo = ePWD.getText().toString().trim();
-                    SIMCardInfo simInfo = new SIMCardInfo(LoginActivity.this);
-                    if (!usrInfo.equals("") && !pwdInfo.equals("")) {
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.putString("usrName", usrInfo);
-                        editor.putString("pwd", pwdInfo);
-                        editor.commit();
-
-                        if (simInfo.getNativePhoneNumber() != 0) {
-                        // Invoke API
-                        RemoteAPI api = new RemoteAPI();
-                        String tip = "";
-                        try {
-                            LoginBean bean = api.login(usrInfo, pwdInfo, simInfo);
-                            tip = bean.getTip();
-                            if (!bean.getRetCode()) {
-                                Toast.makeText(getApplicationContext(), "Fail to login the server: " + tip,
-                                        Toast.LENGTH_LONG).show();
-                            } else {
-                                Log.d(TAG, "Login successful!!!");
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
-                                prefs.edit().putString(Constant.KEY_REMOTE_ACCESS_TOKEN, bean.getEncryptpwd()).apply();
-
-                                Intent intent = new Intent();
-                                intent.setClass(LoginActivity.this, HomePage.class);
-                                startActivity(intent);
-                                LoginActivity.this.finish();
-                            }
-                        } catch (IOException e) {
-                            Log.e(TAG, "Login fail!", e);
-                            Toast.makeText(getApplicationContext(), "Fail to login the server!!!",
-                                    Toast.LENGTH_LONG).show();
-                        }}
-//                        } else {
-//                            Toast.makeText(getApplicationContext(), "Fail to get the phone number, please check your mobile!!!",
-//                                    Toast.LENGTH_LONG).show();
-//                        }
-                    } else {
-                        Toast.makeText(getApplicationContext(), getString(R.string.require_username),
-                                Toast.LENGTH_LONG).show();
-                    }
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                        progressDialog = null;
-                    }
+                    new LoginTask().execute();
                 }
             }
         });
@@ -132,51 +90,82 @@ public class LoginActivity extends Activity {
 
     public class LoginTask extends AsyncTask<Void, Void, Void> {
         protected Void doInBackground(Void... args) {
-            String usrInfo = eUsr.getText().toString();
-            String pwdInfo = ePWD.getText().toString();
-            SIMCardInfo siminfo = new SIMCardInfo(LoginActivity.this);
-            if (!usrInfo.trim().equals("") && !pwdInfo.trim().equals("")) {
-//                        if (siminfo.getNativePhoneNumber() != 0) {
+            String usrInfo = eUsr.getText().toString().trim();
+            String pwdInfo = ePWD.getText().toString().trim();
+            SIMCardInfo simInfo = new SIMCardInfo(LoginActivity.this);
+            boolean authentication = false;
+            if (!usrInfo.equals("") && !pwdInfo.equals("")) {
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putString(Constant.KEY_USERNAME, usrInfo);
+                editor.apply();
+
+//                        if (simInfo.getNativePhoneNumber() != 0) {
                 // Invoke API
                 RemoteAPI api = new RemoteAPI();
                 String tip = "";
                 try {
-                    LoginBean bean = api.login(usrInfo, pwdInfo, siminfo);
+                    LoginBean bean = api.login(usrInfo, pwdInfo, simInfo);
                     tip = bean.getTip();
                     if (!bean.getRetCode()) {
-                        Toast.makeText(getApplicationContext(), "Fail to login the server: " + tip,
-                                Toast.LENGTH_LONG).show();
+                        publishMessage(false, "Fail to login the server: " + tip);
                     } else {
                         Log.d(TAG, "Login successful!!!");
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                         prefs.edit().putString(Constant.KEY_REMOTE_ACCESS_TOKEN, bean.getEncryptpwd()).apply();
-                        Intent intent = new Intent();
-                        intent.setClass(LoginActivity.this, HomePage.class);
-                        startActivity(intent);
-                        LoginActivity.this.finish();
+                        authentication = true;
                     }
                 } catch (IOException e) {
                     Log.e(TAG, "Login fail!", e);
-                    Toast.makeText(getApplicationContext(), "Fail to login the server!!!",
-                            Toast.LENGTH_LONG).show();
+                    if (e instanceof RemoteException && ((RemoteException)e).getStatusCode() == 500) {
+                        publishMessage(false, getString(R.string.invalid_password));
+                    } else {
+                        publishMessage(false, "Fail to login the server: " + e.getMessage());
+                    }
                 }
 //                        } else {
 //                            Toast.makeText(getApplicationContext(), "Fail to get the phone number, please check your mobile!!!",
 //                                    Toast.LENGTH_LONG).show();
 //                        }
-            }
-            else {
-                Toast.makeText(getApplicationContext(), getString(R.string.require_username),
-                        Toast.LENGTH_LONG).show();
+            } else {
+                publishMessage(false, getString(R.string.require_username));
             }
             if (progressDialog != null) {
                 progressDialog.dismiss();
                 progressDialog = null;
             }
+            if (authentication) {
+                Intent intent = new Intent();
+                intent.setClass(LoginActivity.this, HomePage.class);
+                startActivity(intent);
+                LoginActivity.this.finish();
+            }
             return null;
         }
     }
 
+    private void publishMessage(boolean result, String message) {
+        Message msg = handler.obtainMessage();
+        msg.what = MSG_WHAT_LOGIN;
+        msg.getData().putBoolean(MSG_KEY_LOGIN_RESULT, result);
+        msg.getData().putString(MSG_KEY_LOGIN_MSG, message);
+        msg.sendToTarget();
+    }
+
+    class MessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_WHAT_LOGIN:
+//                    boolean result = msg.getData().getBoolean(MSG_KEY_LOGIN_RESULT);
+                    String message = msg.getData().getString(MSG_KEY_LOGIN_MSG);
+                    Toast.makeText(getApplicationContext(), message,
+                            Toast.LENGTH_LONG).show();
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+
+    }
 }
 
 

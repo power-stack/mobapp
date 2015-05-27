@@ -91,6 +91,7 @@ abstract public class Constant {
     public static final String KEY_REMOTE_API_ENDPOINT = "preference_remote_api_endpoint";
     public static final String KEY_REMOTE_ACCESS_TOKEN = "preference_remote_access_token";
     public static final String KEY_REMOTE_ACCESS_COOKIE = "preference_remote_access_cookie";
+    public static final String KEY_USERNAME = "preference_username";
 
     public static final String INTENT_PACKAGE = "io.esse.mobapp";
 

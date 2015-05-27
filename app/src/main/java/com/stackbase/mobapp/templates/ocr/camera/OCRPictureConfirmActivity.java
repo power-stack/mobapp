@@ -71,6 +71,12 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
             //int screenHeight = getResources().getDisplayMetrics().heightPixels;
             Bitmap bm1 = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
             Log.i("ocr_bm", "" + bm1.getWidth() + "," + bm1.getHeight());
+
+            if (bm1.getWidth() < this.ocrTpl.getWidth() && bm1.getHeight() < this.ocrTpl.getHeight()) {
+                Bitmap scaled = Bitmap.createScaledBitmap(bm1, screenHeight, screenWidth, true);
+                bm1.recycle();
+                bm1 = scaled;
+            }
             int topOffset = 0;
             int leftOffset = 0;
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {

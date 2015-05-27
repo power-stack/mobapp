@@ -99,6 +99,7 @@ public class FragmentIDCard extends Fragment {
         active = this.getActivity();
         idFrontPic = (ImageView) content.findViewById(R.id.frontView);
         final InfoTemplate infoTpl = _itManager.getTemplate(Constant.OCR_TPL_IDCARD_FRONT);
+        final String jsonFile = active.getIntent().getStringExtra(Constant.INTENT_KEY_ID_JSON_FILENAME);
 
         ImageButton.OnClickListener fclickListener = new ImageButton.OnClickListener() {
             @Override
@@ -106,6 +107,7 @@ public class FragmentIDCard extends Fragment {
                 Intent intent = new Intent();
                 //intent.setClass(active, OCRActivity.class);
                 intent.putExtra(Constant.OCR_TEMPLATE, Constant.OCR_TPL_IDCARD_FRONT);
+                intent.putExtra(Constant.INTENT_KEY_ID_JSON_FILENAME, jsonFile);
                 intent.setClass(active, infoTpl.getOcrActivityClass());
                 startActivity(intent);
             }
@@ -123,6 +125,7 @@ public class FragmentIDCard extends Fragment {
                 Intent intent = new Intent();
                 //intent.setClass(active, OCRActivity.class);
                 intent.putExtra(Constant.OCR_TEMPLATE, Constant.OCR_TPL_IDCARD_BACK);
+                intent.putExtra(Constant.INTENT_KEY_ID_JSON_FILENAME, jsonFile);
                 intent.setClass(active, binfoTpl.getOcrActivityClass());
                 startActivity(intent);
             }
@@ -133,7 +136,6 @@ public class FragmentIDCard extends Fragment {
 
         idEdit.setEnabled(true);
         nameEdit.setEnabled(true);
-        String jsonFile = active.getIntent().getStringExtra(Constant.INTENT_KEY_ID_JSON_FILENAME);
         if (jsonFile != null && !jsonFile.equals("")) {
             isFromManage = true;
             // This is from borrower manage list

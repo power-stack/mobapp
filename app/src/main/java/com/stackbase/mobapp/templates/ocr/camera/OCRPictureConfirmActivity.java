@@ -9,7 +9,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -19,10 +21,14 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.googlecode.tesseract.android.TessBaseAPI;
+import com.stackbase.mobapp.CollectActivity;
 import com.stackbase.mobapp.R;
+import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.objects.GPSLocation;
 import com.stackbase.mobapp.templates.InfoTemplate;
 import com.stackbase.mobapp.templates.InfoTemplateManager;
+import com.stackbase.mobapp.templates.ocr.util.ImageCutter;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
 
@@ -32,15 +38,20 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class OCRPictureConfirmActivity extends Activity implements View.OnClickListener {
 
     private static final String TAG = OCRPictureConfirmActivity.class.getSimpleName();
+    public static final String DEFAULT_SOURCE_LANGUAGE_CODE = "chi_sim";
     private TextView savePictureTextView;
     private TextView recaptureTextView;
     private ImageView pictureConfirmImageView;
     private String tempImageFile;
     InfoTemplate ocrTpl;
+    private String borrowerJsonPath;
+    Activity active;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +67,8 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
         InfoTemplateManager itManager = InfoTemplateManager.getInstance(getApplication().getResources());
         String tplName = getIntent().getStringExtra(Constant.OCR_TEMPLATE);
         ocrTpl = itManager.getTemplate(tplName);
+        borrowerJsonPath = this.getIntent().getStringExtra(Constant.INTENT_KEY_ID_JSON_FILENAME);
+        Log.i("JSON path :::::::::: ", borrowerJsonPath);
         initImageView();
     }
 
@@ -82,7 +95,7 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 topOffset = (screenWidth - this.ocrTpl.getHeight()) / 2;
                 leftOffset = (screenHeight - this.ocrTpl.getWidth()) / 2;
-            }else{
+            } else {
                 topOffset = (screenHeight - this.ocrTpl.getHeight()) / 2;
                 leftOffset = (screenWidth - this.ocrTpl.getWidth()) / 2;
             }
@@ -167,6 +180,8 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 startActivity(intent1);
                 break;
             case R.id.savePictureTextView:
+                new OCRTextTask().execute();
+
                 String fileName = savePictureFromView();
                 Intent intent = new Intent();
                 intent.putExtra(Constant.INTENT_KEY_PIC_FULLNAME, fileName);
@@ -210,6 +225,154 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 pictureConfirmImageView = null;
             }
         }
+    }
+
+    public class OCRTextTask extends AsyncTask<Void, Void, Void> {
+        protected Void doInBackground(Void... args) {
+            HashMap<String, Bitmap> ciMap = loadcutImage();
+            String[] names = new String[ciMap.size()];
+            Bitmap[] bms = new Bitmap[ciMap.size()];
+            Iterator<String> it = ciMap.keySet().iterator();
+            File storageDirectory = getStorageDirectory();
+            Borrower borrower = new Borrower(borrowerJsonPath);
+            while (it.hasNext()) {
+                String name = it.next();
+                Bitmap bm = ciMap.get(name);
+                TessBaseAPI baseApi = new TessBaseAPI();
+                baseApi.init(storageDirectory.getAbsolutePath(), getRectOCRLanguage(name));
+                baseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SINGLE_LINE);
+                baseApi.setImage(bm);
+                String outputText = baseApi.getUTF8Text();
+                outputText = outputText.replaceAll("T", "1");
+                outputText = outputText.replaceAll("o", "0");
+
+                setBorrowersName(name, borrower, outputText);
+
+            }
+            ((CollectActivity) active).saveBorrowerInfo(borrower);
+            return null;
+        }
+
+        private void setBorrowersName(String name, Borrower borrower, String outputText) {
+
+            if (name.equals("name"))
+                borrower.setName(outputText);
+            else if (name.equals("gender"))
+                borrower.setGender(outputText);
+            else if (name.equals("nationality"))
+                borrower.setNation(outputText);
+            else if (name.equals("birthday")) {
+                Date date = str2Date(outputText);
+                borrower.setBirthday(date);
+            } else if (name.equals("address1") && name.equals("address2") && name.equals("address3")) {
+                outputText += outputText;
+                borrower.setAddress(outputText);
+            } else if (name.equals("id_number"))
+                borrower.setId(outputText);
+            else if (name.equals("issued"))
+                borrower.setLocation(outputText);
+            else if (name.equals("period")) {
+                String[] strs = outputText.split("-");
+                Date date1 = str2DateDot(strs[0]);
+                Date date2 = str2DateDot(strs[1]);
+                borrower.setExpiryFrom(date1);
+                borrower.setExpiryTo(date2);
+            }
+
+
+        }
+
+        private Date str2Date(String str) {
+            Date date = null;
+            String[] b = {"", "", ""};
+            int j = 0;
+            for (int i = 0; i < str.length(); i++) {
+                char a = str.charAt(i);
+                if (a >= '0' && a <= '9') {
+                    b[j] += a;
+                } else {
+                    j++;
+                }
+            }
+            String dateStr = b[0] + "-" + b[1] + "-" + b[2];
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
+                date = sdf.parse(dateStr);
+            } catch (java.text.ParseException e) {
+                e.printStackTrace();
+            }
+            return date;
+        }
+
+        private Date str2DateDot(String str) {
+            Date date = null;
+
+            String dateStr = str.replaceAll(".", "-");
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
+                date = sdf.parse(dateStr);
+            } catch (java.text.ParseException e) {
+                e.printStackTrace();
+            }
+            return date;
+        }
+    }
+
+    private HashMap<String, Bitmap> loadcutImage() {
+        byte[] data = Helper.loadFile(tempImageFile);
+        Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+        Log.i("OCR_CUTTER", "template name is " + ocrTpl.getName());
+        HashMap<String, Bitmap> ciMap = ImageCutter.cutImages(bm, ocrTpl);
+        return ciMap;
+    }
+
+    final String getRectOCRLanguage(String name) {
+        if (ocrTpl == null) {
+            return null;
+        }
+        String lang = ocrTpl.getRectLanguage(name);
+        if (null == lang)
+            lang = DEFAULT_SOURCE_LANGUAGE_CODE;
+        return lang;
+    }
+
+        /** Finds the proper location on the SD card where we can save files. */
+
+    private File getStorageDirectory() {
+        // Log.d(TAG, "getStorageDirectory(): API level is " +
+        // Integer.valueOf(android.os.Build.VERSION.SDK_INT));
+
+        String state = null;
+        try {
+            state = Environment.getExternalStorageState();
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Is the SD card visible?", e);
+        }
+
+        if (Environment.MEDIA_MOUNTED.equals(Environment
+                .getExternalStorageState())) {
+
+            // We can read and write the media
+            // if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) > 7) {
+            // For Android 2.2 and above
+
+            try {
+                return getExternalFilesDir(Environment.MEDIA_MOUNTED);
+            } catch (NullPointerException e) {
+                // We get an error here if the SD card is visible, but full
+                Log.e(TAG, "External storage is unavailable");
+            }
+
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            // We can only read the media
+            Log.e(TAG, "External storage is read-only");
+        } else {
+            // Something else is wrong. It may be one of many other states, but
+            // all we need
+            // to know is we can neither read nor write
+            Log.e(TAG, "External storage is unavailable");
+        }
+        return null;
     }
 
 }

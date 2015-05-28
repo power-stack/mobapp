@@ -47,6 +47,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 public class OCRPictureConfirmActivity extends Activity implements View.OnClickListener {
 
@@ -357,7 +358,7 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
             if (b[2].length() > 2) b[2] = b[2].substring(0,1);
             String dateStr = b[0] + "-" + b[1] + "-" + b[2];
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
                 date = sdf.parse(dateStr);
             } catch (java.text.ParseException e) {
                 e.printStackTrace();
@@ -368,10 +369,9 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
         private Date str2DateDot(String str) {
             Date date = null;
 
-            String dateStr = str.replaceAll(".", "-");
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
-                date = sdf.parse(dateStr);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd", Locale.CHINA);
+                date = sdf.parse(str);
             } catch (java.text.ParseException e) {
                 e.printStackTrace();
             }

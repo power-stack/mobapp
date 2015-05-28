@@ -22,6 +22,7 @@ import com.stackbase.mobapp.utils.Constant;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class FragmentIDCard extends Fragment {
     private static final String TAG = FragmentIDCard.class.getSimpleName();
@@ -96,15 +97,19 @@ public class FragmentIDCard extends Fragment {
             }
             minzuEdit.setText(borrower.getNation());
             if (borrower.getBirthday() != null) {
-                dobEdit.setText(String.valueOf(borrower.getBirthday()));
+                Date d = borrower.getBirthday();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA);
+                dobEdit.setText(sdf.format(d));
             }
             addrEdit.setText(borrower.getAddress());
             locationEdit.setText(borrower.getLocation());
             if (borrower.getExpiryFrom() != null) {
-                expiryFromEdit.setText(String.valueOf(borrower.getExpiryFrom()));
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA);
+                expiryFromEdit.setText(sdf.format(borrower.getExpiryFrom()));
             }
             if (borrower.getExpiryTo() != null) {
-                expiryToEdit.setText(String.valueOf(borrower.getExpiryTo()));
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA);
+                expiryToEdit.setText(sdf.format(borrower.getExpiryTo()));
             }
         }
     }

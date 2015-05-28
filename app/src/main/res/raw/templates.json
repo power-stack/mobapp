@@ -58,7 +58,7 @@
                 "bottom": 440
             },
             "id_number":{
-                "language": "eng",
+                "language": "custom",
                 "left": 310,
                 "right": 850,
                 "top": 450,

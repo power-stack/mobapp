@@ -2,7 +2,6 @@ package com.stackbase.mobapp.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -18,13 +17,13 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.stackbase.mobapp.HomePage;
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.objects.LoginBean;
 import com.stackbase.mobapp.objects.SIMCardInfo;
 import com.stackbase.mobapp.utils.Constant;
+import com.stackbase.mobapp.utils.Helper;
 import com.stackbase.mobapp.utils.RemoteAPI;
 import com.stackbase.mobapp.utils.RemoteException;
 
@@ -54,7 +53,7 @@ public class LoginActivity extends Activity {
         checkBox = (CheckBox) findViewById(R.id.checkBox);
         btn = (Button) findViewById(R.id.loginBtn);
 
-        sp = this.getSharedPreferences("UserInfo", Context.MODE_PRIVATE);
+        sp = PreferenceManager.getDefaultSharedPreferences(this);
         eUsr.setText(sp.getString(Constant.KEY_USERNAME, ""));
 
         eUsr.setLongClickable(false);
@@ -107,12 +106,10 @@ public class LoginActivity extends Activity {
 //                        if (simInfo.getNativePhoneNumber() != 0) {
                 // Invoke API
                 RemoteAPI api = new RemoteAPI();
-                String tip = "";
                 try {
                     LoginBean bean = api.login(usrInfo, pwdInfo, simInfo);
-                    tip = bean.getTip();
                     if (!bean.getRetCode()) {
-                        publishMessage(false, "Fail to login the server: " + tip);
+                        publishMessage(false, "Fail to login the server: " + bean.getTip());
                     } else {
                         Log.d(TAG, "Login successful!!!");
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
@@ -124,7 +121,7 @@ public class LoginActivity extends Activity {
                     if (e instanceof RemoteException && ((RemoteException)e).getStatusCode() == 500) {
                         publishMessage(false, getString(R.string.invalid_password));
                     } else {
-                        publishMessage(false, "Fail to login the server: " + e.getMessage());
+                        publishMessage(false, "Fail to login the server: " + e);
                     }
                 }
 //                        } else {
@@ -163,8 +160,7 @@ public class LoginActivity extends Activity {
                 case MSG_WHAT_LOGIN:
 //                    boolean result = msg.getData().getBoolean(MSG_KEY_LOGIN_RESULT);
                     String message = msg.getData().getString(MSG_KEY_LOGIN_MSG);
-                    Toast.makeText(getApplicationContext(), message,
-                            Toast.LENGTH_LONG).show();
+                    Helper.mMakeTextToast(LoginActivity.this, message, true);
                     break;
             }
             super.handleMessage(msg);

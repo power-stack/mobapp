@@ -395,7 +395,7 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                 }
             } catch (RemoteException e) {
                 if (e.getStatusCode() == 500) {
-                    // TODO need login again
+                    Helper.mMakeTextToast(ManageActivity.this, getString(R.string.relogin), true);
                 }
             }
             // sort by name

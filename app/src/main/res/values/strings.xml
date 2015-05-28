@@ -48,7 +48,7 @@
     <string name="account_title">账户</string>
     <string name="account">账号</string>
     <string name="change_password">更改密码</string>
-    <string name="connection_testing">服务连接器测试</string>
+    <string name="connection_testing">服务器连接</string>
     <string name="keep_logged_in">保持登录状态</string>
     <string name="clean_data">清空数据</string>
     <string name="calculate_usage">正在计算...</string>
@@ -58,6 +58,9 @@
     <string name="about_title">关于</string>
     <string name="about_app">关于翼龙贷</string>
     <string name="exit">退出</string>
+    <string name="joinable">连接服务器成功！</string>
+    <string name="unjoinable">连接服务器不成功，请重试！！</string>
+    <string name="url_changed">服务器连接已经修改，需要重新登录！</string>
 
     <!-- message center -->
     <string name="message_list">消息列表</string>
@@ -69,6 +72,7 @@
     <string name="yesterday">昨天</string>
 
     <!-- prompt -->
+    <string name="test">测试</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
     <string name="err_title">错误</string>
@@ -84,6 +88,7 @@
     <string name="check_data">正在检查已经安装的OCR数据...</string>
     <string name="check_wifi">准备下载，由于数据量较大，建议在wifi环境下下载，是否继续？</string>
     <string name="no_available_network">没有检测到可用网络，无法下载数据。</string>
+    <string name="relogin">登录失效，请到设置中测试服务器连接或退出重新登录。</string>
 
     <!-- remote api call -->
     <string name="call_api_failed">连接服务器失败, 错误代码: %s.</string>

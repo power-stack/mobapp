@@ -59,47 +59,10 @@
                 android:layout_alignParentRight="true"
                 android:text="default" />
             <ImageView
-                android:id="@+id/divider1"
+                android:id="@+id/connection_testing_view"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_below="@id/account"
-                android:layout_marginBottom="7dp"
-                android:background="@drawable/bgd_divider" />
-            <TextView
-                android:id="@+id/change_password"
-                style="@style/SettingLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/divider1"
-                android:layout_marginBottom="9dp"
-                android:text="@string/change_password" />
-            <ImageView
-                android:id="@+id/divider2"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_below="@id/change_password"
-                android:layout_marginBottom="7dp"
-                android:background="@drawable/bgd_divider" />
-            <TextView
-                android:id="@+id/keep_logged_in_text"
-                style="@style/SettingLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/divider2"
-                android:layout_marginBottom="9dp"
-                android:text="@string/keep_logged_in" />
-            <CheckBox
-                android:id="@+id/keep_logged_in"
-                android:layout_width="wrap_content"
-                android:layout_height="29dp"
-                android:layout_alignParentRight="true"
-                android:layout_alignTop="@id/keep_logged_in_text"
-                android:checked="true" />
-            <ImageView
-                android:id="@+id/divider3"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_below="@id/keep_logged_in_text"
+                android:layout_below="@id/account_id"
                 android:layout_marginBottom="7dp"
                 android:background="@drawable/bgd_divider" />
             <TextView
@@ -107,7 +70,7 @@
                 style="@style/SettingLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/divider3"
+                android:layout_below="@+id/connection_testing_view"
                 android:layout_marginBottom="9dp"
                 android:text="@string/connection_testing" />
             <ImageView

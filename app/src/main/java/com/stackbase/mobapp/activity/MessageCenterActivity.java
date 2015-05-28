@@ -197,8 +197,10 @@ public class MessageCenterActivity extends Activity implements IMessageCallback,
             data.addAll(result);
             adapter.notifyDataSetChanged();
             if (progressDialog != null) {
-                progressDialog.dismiss();
-                progressDialog = null;
+                try {
+                    progressDialog.dismiss();
+                    progressDialog = null;
+                } catch (Exception e) {}
             }
         }
     }

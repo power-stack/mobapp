@@ -367,7 +367,7 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
     public class ListBorrowerInfoTask extends AsyncTask<Void, Void, List<SwipeListViewItem>> {
         MessageHandler handler = new MessageHandler();
         protected List<SwipeListViewItem> doInBackground(Void... args) {
-            List<SwipeListViewItem> data = new ArrayList();
+            List<SwipeListViewItem> data = new ArrayList<>();
             String rootDir = prefs.getString(Constant.KEY_STORAGE_DIR,
                     Constant.DEFAULT_STORAGE_DIR);
             try {
@@ -511,8 +511,11 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                     try {
                         Log.d(TAG, "File: " + file.getPath());
                         String result = api.uploadUserDatum(file, borrower, data);
-                        System.out.println("SERVER REPLIED:" + result);
-                        publishProgress(i++ * 100 / fileCount, true);
+                        Log.d(TAG, "SERVER REPLIED:" + result);
+                        int progress = i++ * 100 / fileCount;
+                        if (progress != 100) {
+                            publishProgress(progress, true);
+                        }
                     } catch (IOException ioe) {
                         publishProgress(100, false);
                         this.item.setUploading(false);

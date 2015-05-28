@@ -2,6 +2,7 @@
     "ID_CARD_FRONT": {
         "name": "idcard_front",
         "description": "身份证正面",
+        "data_folder": "本人身份证",
         "width": 933,
         "height": 550,
         "ocr-activity": "com.stackbase.mobapp.templates.ocr.camera.OCRCameraActivity",
@@ -68,6 +69,7 @@
     "ID_CARD_BACK": {
         "name": "idcard_back",
         "description": "身份证背面",
+        "data_folder": "本人身份证",
         "width": 933,
         "height": 550,
         "ocr-activity": "com.stackbase.mobapp.templates.ocr.camera.OCRCameraActivity",

@@ -57,6 +57,7 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
     private static final int REQUEST_CODE_SETTINGS = 0;
     private static final int REQUEST_ID_CHANGE = 1;
     private static final int MSG_WHAT_UPLOAD_BORROWER = 1;
+    private static final int MSG_WHAT_NEED_LOGIN = 2;
     private static final String MSG_KEY_BORROWER_NAME = "MSG_KEY_BORROWER_NAME";
     private static final String MSG_KEY_PROGRESS = "MSG_KEY_PROGRESS";
     private static final String MSG_KEY_UPLOAD_RESULT = "MSG_KEY_UPLOAD_RESULT";
@@ -364,8 +365,9 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
 
 
     public class ListBorrowerInfoTask extends AsyncTask<Void, Void, List<SwipeListViewItem>> {
+        MessageHandler handler = new MessageHandler();
         protected List<SwipeListViewItem> doInBackground(Void... args) {
-            List<SwipeListViewItem> data = new ArrayList();
+            List<SwipeListViewItem> data = new ArrayList<>();
             String rootDir = prefs.getString(Constant.KEY_STORAGE_DIR,
                     Constant.DEFAULT_STORAGE_DIR);
             try {
@@ -395,7 +397,9 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                 }
             } catch (RemoteException e) {
                 if (e.getStatusCode() == 500) {
-//                    Helper.mMakeTextToast(ManageActivity.this, getString(R.string.relogin), true);
+                    publicMessage();
+                    data.clear();
+                    return data;
                 }
             }
             // sort by name
@@ -417,6 +421,12 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                 progressDialog = null;
             }
         }
+
+        private void publicMessage() {
+            Message msg = handler.obtainMessage();
+            msg.what = MSG_WHAT_NEED_LOGIN;
+            msg.sendToTarget();
+        }
     }
 
     class MessageHandler extends Handler {
@@ -435,6 +445,9 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                         else
                             showMessage(id, String.format(getString(R.string.upload_fail), name));
                     }
+                    break;
+                case MSG_WHAT_NEED_LOGIN:
+                    Helper.mMakeTextToast(ManageActivity.this, getString(R.string.relogin), true);
                     break;
             }
             super.handleMessage(msg);
@@ -498,8 +511,11 @@ public class ManageActivity extends Activity implements IUpdateCallback, View.On
                     try {
                         Log.d(TAG, "File: " + file.getPath());
                         String result = api.uploadUserDatum(file, borrower, data);
-                        System.out.println("SERVER REPLIED:" + result);
-                        publishProgress(i++ * 100 / fileCount, true);
+                        Log.d(TAG, "SERVER REPLIED:" + result);
+                        int progress = i++ * 100 / fileCount;
+                        if (progress != 100) {
+                            publishProgress(progress, true);
+                        }
                     } catch (IOException ioe) {
                         publishProgress(100, false);
                         this.item.setUploading(false);

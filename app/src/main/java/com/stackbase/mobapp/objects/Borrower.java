@@ -23,6 +23,10 @@ public class Borrower extends JSONObj {
     private long ownerid;
     private List<BorrowerData> datalist = null;
 
+    private String addr1 = "";
+    private String addr2 = "";
+    private String addr3 = "";
+
     public Borrower() {
         super();
     }
@@ -173,5 +177,20 @@ public class Borrower extends JSONObj {
 
     public void setOwnerid(long ownerid) {
         this.ownerid = ownerid;
+    }
+
+    public void setAddr1(String addr){
+        this.addr1 = addr;
+        this.address = addr1 + addr2 + addr3;
+    }
+
+    public void setAddr2(String addr){
+        this.addr2 = addr;
+        this.address = addr1 + addr2 + addr3;
+    }
+
+    public void setAddr3(String addr){
+        this.addr3 = addr;
+        this.address = addr1 + addr2 + addr3;
     }
 }

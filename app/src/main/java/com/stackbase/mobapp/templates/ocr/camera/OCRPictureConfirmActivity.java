@@ -1,6 +1,7 @@
 package com.stackbase.mobapp.templates.ocr.camera;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -22,9 +23,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
-import com.stackbase.mobapp.CollectActivity;
+import com.stackbase.mobapp.FragmentIDCard;
 import com.stackbase.mobapp.R;
 import com.stackbase.mobapp.objects.Borrower;
+import com.stackbase.mobapp.objects.BorrowerData;
 import com.stackbase.mobapp.objects.GPSLocation;
 import com.stackbase.mobapp.templates.InfoTemplate;
 import com.stackbase.mobapp.templates.InfoTemplateManager;
@@ -32,14 +34,19 @@ import com.stackbase.mobapp.templates.ocr.util.ImageCutter;
 import com.stackbase.mobapp.utils.Constant;
 import com.stackbase.mobapp.utils.Helper;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class OCRPictureConfirmActivity extends Activity implements View.OnClickListener {
 
@@ -52,6 +59,7 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
     InfoTemplate ocrTpl;
     private String borrowerJsonPath;
     Activity active;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +76,6 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
         String tplName = getIntent().getStringExtra(Constant.OCR_TEMPLATE);
         ocrTpl = itManager.getTemplate(tplName);
         borrowerJsonPath = this.getIntent().getStringExtra(Constant.INTENT_KEY_ID_JSON_FILENAME);
-        Log.i("JSON path :::::::::: ", borrowerJsonPath);
         initImageView();
     }
 
@@ -126,6 +133,7 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
 
     }
 
+
     private String savePictureFromView() {
         String fileName = "";
         if (pictureConfirmImageView == null) {
@@ -180,16 +188,22 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 startActivity(intent1);
                 break;
             case R.id.savePictureTextView:
-                new OCRTextTask().execute();
+                HashMap<String, Bitmap> ciMap = loadcutImage();
+                progressDialog = new ProgressDialog(OCRPictureConfirmActivity.this);
+                progressDialog.setMessage(getString(R.string.loading));
+                progressDialog.setCancelable(false);
+                progressDialog.show();
+                new OCRTextTask(ciMap).execute();
 
-                String fileName = savePictureFromView();
-                Intent intent = new Intent();
-                intent.putExtra(Constant.INTENT_KEY_PIC_FULLNAME, fileName);
-                this.setResult(Activity.RESULT_OK, intent);
+
+                //Intent intent = new Intent();
+                //intent.putExtra(Constant.INTENT_KEY_PIC_FULLNAME, fileName);
+                //this.setResult(Activity.RESULT_OK, intent);
+
                 break;
         }
-        releaseBitmap();
-        finish();
+        //releaseBitmap();
+        //finish();
     }
 
     @Override
@@ -228,13 +242,18 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
     }
 
     public class OCRTextTask extends AsyncTask<Void, Void, Void> {
+        HashMap<String, Bitmap> ciMap;
+        public OCRTextTask(HashMap<String, Bitmap> ciMap){
+            this.ciMap = ciMap;
+        }
         protected Void doInBackground(Void... args) {
-            HashMap<String, Bitmap> ciMap = loadcutImage();
-            String[] names = new String[ciMap.size()];
-            Bitmap[] bms = new Bitmap[ciMap.size()];
+
             Iterator<String> it = ciMap.keySet().iterator();
             File storageDirectory = getStorageDirectory();
-            Borrower borrower = new Borrower(borrowerJsonPath);
+            Borrower borrower = FragmentIDCard.borrower;
+            if (null == borrower)
+                borrower = new Borrower();
+
             while (it.hasNext()) {
                 String name = it.next();
                 Bitmap bm = ciMap.get(name);
@@ -243,46 +262,82 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 baseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SINGLE_LINE);
                 baseApi.setImage(bm);
                 String outputText = baseApi.getUTF8Text();
+                if (null == outputText || outputText.trim().length() == 0)
+                    continue;
+                outputText = outputText.trim();
                 outputText = outputText.replaceAll("T", "1");
                 outputText = outputText.replaceAll("o", "0");
 
-                setBorrowersName(name, borrower, outputText);
-
+                updateBorrower(name, borrower, outputText);
+                baseApi.end();
+                //bm.recycle();
             }
-            ((CollectActivity) active).saveBorrowerInfo(borrower);
+            Log.d(TAG, borrower.toString());
+            saveBorrowerInfo(borrower);
+            //((CollectActivity) active).saveBorrowerInfo(borrower);
+            BitmapDrawable drawable = (BitmapDrawable) pictureConfirmImageView.getDrawable();
+            String fileName = Helper.savePicture(borrower, ocrTpl, OCRPictureConfirmActivity.this, drawable);
+            //String fileName = savePictureFromView();
+
+            if (progressDialog != null) {
+                progressDialog.dismiss();
+                progressDialog = null;
+            }
+            releaseBitmap();
+            OCRPictureConfirmActivity.this.setResult(Activity.RESULT_OK);
+            OCRPictureConfirmActivity.this.finish();
             return null;
         }
 
-        private void setBorrowersName(String name, Borrower borrower, String outputText) {
-
+        private void updateBorrower(String name, Borrower borrower, String outputText) {
+            Log.d(TAG, "OCR : " + name + "=" + outputText);
             if (name.equals("name"))
                 borrower.setName(outputText);
-            else if (name.equals("gender"))
+            else if (name.equals("gender")) {
+                if (outputText.equals("另"))
+                    outputText = "男";
                 borrower.setGender(outputText);
-            else if (name.equals("nationality"))
+            } else if (name.equals("nationality")) {
+                if (outputText.equals("汶") || outputText.equals("汊")) {
+                    outputText = "汉";
+                }
                 borrower.setNation(outputText);
-            else if (name.equals("birthday")) {
+            } else if (name.equals("birthday")) {
                 Date date = str2Date(outputText);
                 borrower.setBirthday(date);
-            } else if (name.equals("address1") && name.equals("address2") && name.equals("address3")) {
-                outputText += outputText;
-                borrower.setAddress(outputText);
+            } else if (name.equals("address1")) {
+                borrower.setAddr1(outputText);
+            } else if (name.equals("address2")) {
+                borrower.setAddr2(outputText);
+            } else if (name.equals("address3")) {
+                borrower.setAddr3(outputText);
             } else if (name.equals("id_number"))
                 borrower.setId(outputText);
             else if (name.equals("issued"))
                 borrower.setLocation(outputText);
             else if (name.equals("period")) {
-                String[] strs = outputText.split("-");
-                Date date1 = str2DateDot(strs[0]);
-                Date date2 = str2DateDot(strs[1]);
-                borrower.setExpiryFrom(date1);
-                borrower.setExpiryTo(date2);
+                if (outputText.length() > 11) {
+                    String from = outputText.substring(0, 10);
+                    String to = null;
+                    if (outputText.length() >= 21){
+                        to = outputText.substring(11, 21);
+                    }
+                    Date date1 = str2DateDot(from);
+
+                    borrower.setExpiryFrom(date1);
+                    if (null != to){
+                        Date date2 = str2DateDot(to);
+                        borrower.setExpiryTo(date2);
+                    }
+
+                }
             }
 
 
         }
 
         private Date str2Date(String str) {
+            Log.d(TAG, "str2Date input: " + str);
             Date date = null;
             String[] b = {"", "", ""};
             int j = 0;
@@ -290,10 +345,16 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
                 char a = str.charAt(i);
                 if (a >= '0' && a <= '9') {
                     b[j] += a;
+                } else if (a == ' '){
+                    continue;
                 } else {
                     j++;
+                    if (j>2) break;
                 }
             }
+
+            if (b[1].length() == 1) b[1] = "0" + b[1];
+            if (b[2].length() > 2) b[2] = b[2].substring(0,1);
             String dateStr = b[0] + "-" + b[1] + "-" + b[2];
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd ");
@@ -319,8 +380,14 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
     }
 
     private HashMap<String, Bitmap> loadcutImage() {
-        byte[] data = Helper.loadFile(tempImageFile);
-        Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+        if (pictureConfirmImageView == null) {
+            pictureConfirmImageView = (ImageView) findViewById(R.id.pictureConfirmImageView);
+        }
+        BitmapDrawable drawable = (BitmapDrawable) pictureConfirmImageView.getDrawable();
+
+        //byte[] data = Helper.loadFile(tempImageFile);
+        //Bitmap bm = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+        Bitmap bm = drawable.getBitmap();
         Log.i("OCR_CUTTER", "template name is " + ocrTpl.getName());
         HashMap<String, Bitmap> ciMap = ImageCutter.cutImages(bm, ocrTpl);
         return ciMap;
@@ -373,6 +440,32 @@ public class OCRPictureConfirmActivity extends Activity implements View.OnClickL
             Log.e(TAG, "External storage is unavailable");
         }
         return null;
+    }
+
+    public boolean saveBorrowerInfo(Borrower borrower) {
+        FragmentIDCard.borrower = borrower;
+        if (borrower.getDatalist() == null || borrower.getDatalist().size() == 0) {
+            // Load borrow type from template
+            Log.d(TAG, "Can not find the borrow type from borrower json file, will load it from template.");
+            List<BorrowerData> templateDats = new ArrayList<>();
+            JSONObject json = Helper.loadJsonFromRaw(getResources(), R.raw.borrow_data_template);
+            Object obj = json.get("datalist");
+            if (obj != null && obj instanceof JSONArray) {
+                for (Object jobj: ((JSONArray) obj)) {
+                    BorrowerData data = new BorrowerData();
+                    Helper.covertJson(data, ((JSONObject) jobj));
+                    templateDats.add(data);
+                }
+            }
+            borrower.setDatalist(templateDats);
+        }
+        boolean result = Helper.saveBorrower(borrower);
+        Log.d(TAG, "borrower json file: " + borrower.getJsonFile());
+        if (result) {
+            getIntent().putExtra(Constant.INTENT_KEY_ID_JSON_FILENAME, borrower.getJsonFile());
+        }
+
+        return result;
     }
 
 }

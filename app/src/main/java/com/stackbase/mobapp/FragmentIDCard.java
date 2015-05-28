@@ -41,7 +41,7 @@ public class FragmentIDCard extends Fragment {
     private EditText expiryToEdit;
     private SharedPreferences prefs;
     private boolean isFromManage = false;
-    private Borrower borrower;
+    public static Borrower borrower;
     private InfoTemplateManager _itManager;
 
     @Override
@@ -79,6 +79,35 @@ public class FragmentIDCard extends Fragment {
 
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (null != borrower){
+            idEdit.setText(borrower.getId());
+            idEdit.setEnabled(false);
+            nameEdit.setText(borrower.getName());
+            nameEdit.setEnabled(false);
+            if ("男".equals(borrower.getGender())) {
+                maleButton.setChecked(true);
+                femaleButton.setChecked(false);
+            } else {
+                maleButton.setChecked(false);
+                femaleButton.setChecked(true);
+            }
+            minzuEdit.setText(borrower.getNation());
+            if (borrower.getBirthday() != null) {
+                dobEdit.setText(String.valueOf(borrower.getBirthday()));
+            }
+            addrEdit.setText(borrower.getAddress());
+            locationEdit.setText(borrower.getLocation());
+            if (borrower.getExpiryFrom() != null) {
+                expiryFromEdit.setText(String.valueOf(borrower.getExpiryFrom()));
+            }
+            if (borrower.getExpiryTo() != null) {
+                expiryToEdit.setText(String.valueOf(borrower.getExpiryTo()));
+            }
+        }
+    }
     @Override
     public void onStop() {
         super.onStop();
@@ -250,24 +279,6 @@ public class FragmentIDCard extends Fragment {
             active.getIntent().putExtra(Constant.INTENT_KEY_ID, id);
             active.getIntent().putExtra(Constant.INTENT_KEY_NAME, name);
 
-//            ArrayList<BorrowerData> list = new ArrayList<BorrowerData>();
-//            BorrowerData data = new BorrowerData();
-//            data.setDatumId(1);
-//            data.setDatumName("test");
-//            list.add(data);
-//            data = new BorrowerData();
-//            data.setDatumId(2);
-//            data.setDatumName("test2");
-//            list.add(data);
-//            data = new BorrowerData();
-//            data.setDatumId(3);
-//            data.setDatumName("test3");
-//            list.add(data);
-//            data = new BorrowerData();
-//            data.setDatumId(4);
-//            data.setDatumName("test4");
-//            list.add(data);
-//            borrower.setDatalist(list);
             ((CollectActivity) active).saveBorrowerInfo(borrower);
             return true;
         }

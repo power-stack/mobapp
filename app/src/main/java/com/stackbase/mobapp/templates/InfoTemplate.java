@@ -22,6 +22,8 @@ public class InfoTemplate{
 
     private String _desc = null;
 
+    private String _data_folder = null;
+
     private int _width = 0;
 
     private int _height = 0;
@@ -46,6 +48,9 @@ public class InfoTemplate{
             _desc = (String)jObj.get("description");
         }
 
+        if (jObj.containsKey("data_folder")){
+            _data_folder = (String)jObj.get("data_folder");
+        }
         if (jObj.containsKey("width")){
             _width = ((Long)jObj.get("width")).intValue();
         }
@@ -132,5 +137,9 @@ public class InfoTemplate{
 
     public String[] getRectValues(String rectName) {
         return _valueMap.get(rectName);
+    }
+
+    public String getDataFolder(){
+        return _data_folder;
     }
 }

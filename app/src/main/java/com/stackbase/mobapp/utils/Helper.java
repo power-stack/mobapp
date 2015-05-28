@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -19,6 +21,7 @@ import com.stackbase.mobapp.objects.Borrower;
 import com.stackbase.mobapp.objects.BorrowerData;
 import com.stackbase.mobapp.objects.JSONObj;
 import com.stackbase.mobapp.objects.Message;
+import com.stackbase.mobapp.templates.InfoTemplate;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -26,6 +29,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -581,5 +585,46 @@ abstract public class Helper {
             }
         }
         return null;
+    }
+
+
+    public static String savePicture(Borrower borrower, InfoTemplate ocrTpl, Activity activity, BitmapDrawable drawable){
+        String parentFolder = Helper.getBorrowerSubFolder(borrower);
+        String fileName = null;
+        BorrowerData data = null;
+        for (BorrowerData data1 : borrower.getDatalist()){
+            if (data1.getDatumName().equals(ocrTpl.getDataFolder())){
+                data = data1;
+                break;
+            }
+        }
+        if (null != data) {
+            String subFolder = Helper.getBorrowDataSubFolder(borrower, data);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+            String rootDir = prefs.getString(Constant.KEY_STORAGE_DIR,
+                    Constant.DEFAULT_STORAGE_DIR);
+            File imageFolder = new File(rootDir + File.separator + parentFolder
+                    + File.separator + subFolder);
+            if (!imageFolder.exists()) {
+                imageFolder.mkdirs();
+            }
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            drawable.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            File pictureFile = new File(imageFolder.getAbsolutePath() + File.separator + ocrTpl.getName() + ".jpg");
+            if (pictureFile == null) {
+                Log.d(TAG, "Error creating media file, check storage permissions!!");
+            } else {
+                Helper.saveFile(pictureFile.getAbsolutePath(), byteArray);
+                fileName = pictureFile.getAbsolutePath();
+            }
+            try {
+                stream.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Fail to close stream.", e);
+            }
+        }
+        return fileName;
     }
 }

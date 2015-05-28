@@ -360,10 +360,7 @@ public class OCRCameraActivity extends Activity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 0) {
             if (resultCode == Activity.RESULT_OK) {
-                String fileName = data.getStringExtra(Constant.INTENT_KEY_PIC_FULLNAME);
-                Intent intent = new Intent();
-                intent.putExtra(Constant.INTENT_KEY_PIC_FULLNAME, fileName);
-                this.setResult(Activity.RESULT_OK, intent);
+                this.setResult(Activity.RESULT_OK);
                 finish();
             } else {
                 resumeContinuousCapture();

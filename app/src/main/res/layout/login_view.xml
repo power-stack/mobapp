@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <RelativeLayout
+        android:id="@+id/loginUI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </RelativeLayout>
+
+    <EditText
+        android:id="@+id/server_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/connection_testing"
+        android:singleLine="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/loginUI"
+        android:inputType="textUri"
+        android:layout_centerHorizontal="true">
+    </EditText>
+
+    <EditText
+        android:id="@+id/user_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/input_username"
+        android:singleLine="true"
+        android:layout_below="@+id/server_url"
+        android:layout_centerHorizontal="true">
+    </EditText>
+
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/input_pwd"
+        android:singleLine="true"
+        android:inputType="textPassword"
+        android:layout_below="@+id/user_name"
+        android:layout_centerHorizontal="true">
+    </EditText>
+
+    <CheckBox
+        android:id="@+id/maskCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/display_pwd"
+        android:layout_below="@+id/password"
+        android:layout_alignLeft="@+id/password"
+        android:layout_alignStart="@+id/password" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/testConnectBtn"
+        android:text="@string/test"
+        android:layout_below="@+id/maskCheckBox"
+        android:layout_toRightOf="@+id/maskCheckBox"
+        android:layout_toEndOf="@+id/maskCheckBox"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/cancelTestBtn"
+        android:text="@string/cancel"
+        android:layout_alignTop="@+id/testConnectBtn"
+        android:layout_toRightOf="@+id/testConnectBtn"
+        android:layout_toEndOf="@+id/testConnectBtn"
+        />
+
+</RelativeLayout>

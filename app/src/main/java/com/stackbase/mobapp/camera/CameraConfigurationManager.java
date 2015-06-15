@@ -186,7 +186,7 @@ final class CameraConfigurationManager {
         }
 
         Point bestSize = null;
-        float screenAspectRatio = (float) screenResolution.x / (float) screenResolution.y;
+        //float screenAspectRatio = (float) screenResolution.x / (float) screenResolution.y;
 
         float diff = Float.POSITIVE_INFINITY;
         for (Camera.Size supportedPreviewSize : supportedPreviewSizes) {
@@ -202,6 +202,7 @@ final class CameraConfigurationManager {
                 sx = sy;
                 sy = screenResolution.x;
             }
+            float screenAspectRatio = (float) sx / (float) sy;
             boolean isCandidatePortrait = realWidth < realHeight;
             int maybeFlippedWidth = isCandidatePortrait ? realHeight : realWidth;
             int maybeFlippedHeight = isCandidatePortrait ? realWidth : realHeight;

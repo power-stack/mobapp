@@ -56,7 +56,7 @@ abstract public class Constant {
     /**
      * The default url to download ocr packages
      */
-    public static final String DEFAULT_DOWNLOAD_URL = "http://www.idevops.net:33080/files";
+    public static final String DEFAULT_DOWNLOAD_URL = "http://www.idevops.net:33080/ocr_files";
 
     /**
      * The default url to connect to Server API
